@@ -8,6 +8,10 @@ export class HomePage {
     private nameInputField: Locator;
     private emailInputField: Locator;
     private signupButton: Locator;
+    private logintoYourAccountText: Locator;
+    private loginemailField:Locator;
+    private loginpasswordField : Locator;
+    private loginButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -17,6 +21,11 @@ export class HomePage {
         this.nameInputField = page.getByPlaceholder('Name');
         this.emailInputField = page.locator("//input[@data-qa='signup-email']");
         this.signupButton = page.getByRole('button', { name: 'Signup' });
+        this.logintoYourAccountText= page.getByRole('heading', { name: 'Login to your account' });
+        this.loginemailField= page.locator('form').locator('input').nth(1);
+        this.loginpasswordField=page.getByRole('textbox', { name: 'Password' });
+        this.loginButton= page.getByRole('button', { name: 'Login' });
+
     }
 
     async clickOnSignupLoginButton() {
@@ -40,5 +49,20 @@ export class HomePage {
     }
     async clickOnSignupButton(){
         await this.signupButton.click();
+    }
+    async GetLoginToYourAccountText():Promise<Locator>{
+        return this.logintoYourAccountText;
+    }
+    async EnterLoginEmail(email:string){
+        await this.loginemailField.fill(email);
+    }
+    async EnterLoginPassword(password:string){
+        await this.loginpasswordField.fill(password);
+    }
+    async GetLoginButton():Promise<Locator>{
+        return this.loginButton;
+    }
+    async ClickOnLoginButton(){
+        await this.loginButton.click();
     }
 }
