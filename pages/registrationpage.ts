@@ -27,6 +27,7 @@ export class RegistrationPage {
     private continueButton: Locator;
     private loggedInAsText: Locator;
     private deleteAccountButton: Locator;
+    private EmailAddressalreadyexistText : Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -55,6 +56,7 @@ export class RegistrationPage {
         this.continueButton = page.getByRole('link', { name: 'Continue' });
         this.loggedInAsText = page.getByText(/Logged in as/i);
         this.deleteAccountButton = page.getByRole('link', { name: 'Delete Account' });
+        this.EmailAddressalreadyexistText=page.getByText('Email Address already exist!', { exact: true });
     }
 
     async GetEnteraccoutinformationText(): Promise<Locator> {
@@ -215,5 +217,9 @@ export class RegistrationPage {
 
     async ClickDeleteAccountButton(): Promise<void> {
         await this.deleteAccountButton.click();
+    }
+
+    async GetEmailAddressalreadyexistText(): Promise<Locator>{
+        return this.EmailAddressalreadyexistText;
     }
 }
