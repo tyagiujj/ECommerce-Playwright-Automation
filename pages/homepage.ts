@@ -12,6 +12,7 @@ export class HomePage {
     private loginemailField:Locator;
     private loginpasswordField : Locator;
     private loginButton: Locator;
+    private productButton : Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -25,6 +26,7 @@ export class HomePage {
         this.loginemailField= page.locator('form').locator('input').nth(1);
         this.loginpasswordField=page.getByRole('textbox', { name: 'Password' });
         this.loginButton= page.getByRole('button', { name: 'Login' });
+        this.productButton=page.getByRole('link', { name: ' Products' });
 
     }
 
@@ -64,5 +66,8 @@ export class HomePage {
     }
     async ClickOnLoginButton(){
         await this.loginButton.click();
+    }
+    async ClickOnProductButton(){
+        await this.productButton.click();
     }
 }
