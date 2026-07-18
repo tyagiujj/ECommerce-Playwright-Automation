@@ -17,6 +17,7 @@ export class HomePage {
     private subscriptionEmailField: Locator;
     private subscriptionArrowButton: Locator;
     private subscriptionSuccessMessage : Locator;
+    private cartButton : Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -35,6 +36,7 @@ export class HomePage {
         this.subscriptionEmailField =page.getByRole('textbox', { name: 'Your email address' });
         this.subscriptionArrowButton = page.locator('#subscribe');
         this.subscriptionSuccessMessage = page.getByText('You have been successfully subscribed!');
+        this.cartButton = page.getByText('Cart', { exact: true });
     }
 
     async clickOnSignupLoginButton() {
@@ -102,6 +104,9 @@ export class HomePage {
     }
     async GetSubscriptionSuccessMessage(): Promise<Locator> {
         return this.subscriptionSuccessMessage;
+    }
+    async ClickOnCartButton(){
+        await this.cartButton.click();
     }
 
    
