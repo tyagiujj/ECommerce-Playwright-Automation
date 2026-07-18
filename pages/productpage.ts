@@ -12,6 +12,10 @@ export class ProductPage {
     private readonly condition: Locator;
     private readonly brand: Locator;
     private readonly productNames: Locator;
+    private readonly searchInputField: Locator;
+    private readonly searchButton: Locator;
+    private readonly searchedProductText: Locator;
+    private readonly searchedProductsList: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -34,6 +38,14 @@ export class ProductPage {
 
         // All Product Names
         this.productNames = page.locator(".features_items .product-image-wrapper .productinfo p");
+
+        // Search Product
+        this.searchInputField = page.getByRole('textbox', { name: 'Search Product' });
+        this.searchButton = page.locator('#submit_search');
+        this.searchedProductText = page.getByRole('heading', { name: 'Searched Products' });
+
+        // Searched Products List
+        this.searchedProductsList = page.locator(".features_items .product-image-wrapper");
     }
 
     async GetAllProductText(): Promise<Locator> {
@@ -98,5 +110,29 @@ export class ProductPage {
         }
 
         return names;
+    }
+
+    async SearchProduct(productName: string): Promise<void> {
+        await this.searchInputField.fill(productName);
+        await this.searchButton.click();
+    }
+
+    async GetSearchedProductText(): Promise<Locator> {
+        return this.searchedProductText;
+    }
+
+    async GetSearchedProductsList(): Promise<Locator> {
+        return this.searchedProductsList;
+    }
+
+    async VerifyAllSearchedProductsAreVisible(): Promise<void> {
+        const count = await this.searchedProductsList.count();
+
+        console.log(`Total searched products found: ${count}`);
+
+        for (let i = 0; i < count; i++) {
+            await this.searchedProductsList.nth(i).scrollIntoViewIfNeeded();
+            await this.searchedProductsList.nth(i).waitFor({ state: "visible" });
+        }
     }
 }
