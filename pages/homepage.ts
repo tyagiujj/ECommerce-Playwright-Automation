@@ -9,10 +9,14 @@ export class HomePage {
     private emailInputField: Locator;
     private signupButton: Locator;
     private logintoYourAccountText: Locator;
-    private loginemailField:Locator;
-    private loginpasswordField : Locator;
+    private loginemailField: Locator;
+    private loginpasswordField: Locator;
     private loginButton: Locator;
-    private productButton : Locator;
+    private productButton: Locator;
+    private subscriptionText: Locator;
+    private subscriptionEmailField: Locator;
+    private subscriptionArrowButton: Locator;
+    private subscriptionSuccessMessage : Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -22,12 +26,15 @@ export class HomePage {
         this.nameInputField = page.getByPlaceholder('Name');
         this.emailInputField = page.locator("//input[@data-qa='signup-email']");
         this.signupButton = page.getByRole('button', { name: 'Signup' });
-        this.logintoYourAccountText= page.getByRole('heading', { name: 'Login to your account' });
-        this.loginemailField= page.locator('form').locator('input').nth(1);
-        this.loginpasswordField=page.getByRole('textbox', { name: 'Password' });
-        this.loginButton= page.getByRole('button', { name: 'Login' });
-        this.productButton=page.getByRole('link', { name: ' Products' });
-
+        this.logintoYourAccountText = page.getByRole('heading', { name: 'Login to your account' });
+        this.loginemailField = page.locator('form').locator('input').nth(1);
+        this.loginpasswordField = page.getByRole('textbox', { name: 'Password' });
+        this.loginButton = page.getByRole('button', { name: 'Login' });
+        this.productButton = page.getByRole('link', { name: ' Products' });
+        this.subscriptionText = page.getByRole('heading', { name: 'Subscription' });
+        this.subscriptionEmailField =page.getByRole('textbox', { name: 'Your email address' });
+        this.subscriptionArrowButton = page.locator('#subscribe');
+        this.subscriptionSuccessMessage = page.getByText('You have been successfully subscribed!');
     }
 
     async clickOnSignupLoginButton() {
@@ -37,37 +44,65 @@ export class HomePage {
     async verifyHomepageLogoIsVisible(): Promise<Locator> {
         return this.homepageLogo;
     }
-    async verifyNewUserSignupTextIsVisible(): Promise<Locator>{
+
+    async verifyNewUserSignupTextIsVisible(): Promise<Locator> {
         return this.newUserSignupText;
     }
-    async enterName(name: string){
+
+    async enterName(name: string) {
         await this.nameInputField.fill(name);
     }
-    async enterEmail(email:string){
+
+    async enterEmail(email: string) {
         await this.emailInputField.fill(email);
     }
-    async GetSignupButton(): Promise<Locator>{
+
+    async GetSignupButton(): Promise<Locator> {
         return this.signupButton;
     }
-    async clickOnSignupButton(){
+
+    async clickOnSignupButton() {
         await this.signupButton.click();
     }
-    async GetLoginToYourAccountText():Promise<Locator>{
+
+    async GetLoginToYourAccountText(): Promise<Locator> {
         return this.logintoYourAccountText;
     }
-    async EnterLoginEmail(email:string){
+
+    async EnterLoginEmail(email: string) {
         await this.loginemailField.fill(email);
     }
-    async EnterLoginPassword(password:string){
+
+    async EnterLoginPassword(password: string) {
         await this.loginpasswordField.fill(password);
     }
-    async GetLoginButton():Promise<Locator>{
+
+    async GetLoginButton(): Promise<Locator> {
         return this.loginButton;
     }
-    async ClickOnLoginButton(){
+
+    async ClickOnLoginButton() {
         await this.loginButton.click();
     }
-    async ClickOnProductButton(){
+
+    async ClickOnProductButton() {
         await this.productButton.click();
     }
+
+    async GetSubscriptionText(): Promise<Locator> {
+        return this.subscriptionText;
+    }
+
+    async EnterSubscriptionEmail(email:string){
+        await this.subscriptionEmailField.fill(email);
+    }
+
+    async ClickOnSubscriptionArrowButton(){
+        await this.subscriptionArrowButton.click();
+    }
+    async GetSubscriptionSuccessMessage(): Promise<Locator> {
+        return this.subscriptionSuccessMessage;
+    }
+
+   
 }
