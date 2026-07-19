@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify Subscription in home page", async ({ page }) => {
+test("Verify Subscription in Cart page", async ({ page }) => {
 
     // Verify home page is visible
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();
