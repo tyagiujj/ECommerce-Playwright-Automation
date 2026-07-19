@@ -24,6 +24,10 @@ export class ProductPage {
     private readonly cartProductPrice: Locator;
     private readonly cartProductQuantity: Locator;
     private readonly cartProductTotalPrice: Locator;
+    private readonly productQuantityField: Locator;
+    private readonly productDetailsAddToCartButton: Locator;
+    private readonly viewProductPagePrice: Locator;
+    private readonly cartFirstProductQuantity: Locator;
 
   // First Product
 private readonly firstProduct: Locator;
@@ -81,6 +85,13 @@ this.cartProducts = page.locator("#cart_info_table tbody tr");
 this.cartProductPrice = page.locator("#cart_info_table tbody tr .cart_price p");
 this.cartProductQuantity = page.locator("#cart_info_table tbody tr .cart_quantity button");
 this.cartProductTotalPrice = page.locator("#cart_info_table tbody tr .cart_total_price");
+// Product Details Page
+this.productQuantityField = page.locator("#quantity");
+this.productDetailsAddToCartButton = page.locator(".product-information button.cart");
+this.viewProductPagePrice = page.locator(".product-information span > span");
+// First Product Quantity in Cart
+this.cartFirstProductQuantity = page.locator("#cart_info_table tbody tr:first-child .cart_quantity button"
+);
 }
 
 
@@ -239,5 +250,37 @@ async VerifyProductsAddedInCart(): Promise<void> {
         await this.cartProductQuantity.nth(i).waitFor({ state: "visible" });
         await this.cartProductTotalPrice.nth(i).waitFor({ state: "visible" });
     }
+}
+// Get Quantity Input Field
+async GetProductQuantityField(): Promise<Locator> {
+    return this.productQuantityField;
+}
+
+// Enter Product Quantity
+async EnterProductQuantity(quantity: string): Promise<void> {
+    await this.productQuantityField.clear();
+    await this.productQuantityField.fill(quantity);
+}
+
+// Get Add To Cart Button on Product Details Page
+async GetProductDetailsAddToCartButton(): Promise<Locator> {
+    return this.productDetailsAddToCartButton;
+}
+
+// Click Add To Cart Button on Product Details Page
+async ClickProductDetailsAddToCartButton(): Promise<void> {
+    await this.productDetailsAddToCartButton.click();
+}
+
+// Get Product Price on Details Page
+async GetViewProductPagePrice(): Promise<Locator> {
+    return this.viewProductPagePrice;
+}
+// Get Quantity of First Product from Cart
+async GetFirstProductCartQuantity(): Promise<number> {
+
+    const quantityText = await this.cartProductQuantity.first().textContent();
+
+    return Number(quantityText?.trim());
 }
 }
