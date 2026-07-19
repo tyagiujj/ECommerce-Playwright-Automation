@@ -19,6 +19,8 @@ export class CartAndCheckOutPage {
     private readonly ExpirationYear: Locator;
     private readonly payAndConfirmOrderButton: Locator;
     private readonly orderSuccessMessage: Locator;
+    private readonly removeProductButton: Locator;
+    private readonly cartIsEmptyMessage : Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -55,6 +57,12 @@ export class CartAndCheckOutPage {
 
         // Order Success Message
         this.orderSuccessMessage = page.locator('[data-qa="order-placed"]');
+
+        // Remove Product Button
+       this.removeProductButton = page.locator("a.cart_quantity_delete");
+
+        // Cart is Empty Message
+        this.cartIsEmptyMessage = page.getByText('Cart is empty! Click here to buy products.', { exact: true });
     }
 
     async ClickOnProceedToCheckoutButton() {
@@ -165,5 +173,13 @@ export class CartAndCheckOutPage {
 
     async GetOrderSuccessMessage(): Promise<Locator> {
         return this.orderSuccessMessage;
+    }
+
+    async ClickRemoveProductButton(): Promise<void> {
+        await this.removeProductButton.click();
+    }
+
+    async GetCartIsEmptyMessage(): Promise<Locator> {
+        return this.cartIsEmptyMessage;
     }
 }
