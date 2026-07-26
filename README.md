@@ -1,235 +1,364 @@
-# E-Commerce Playwright Automation Framework
+# 🛒 E-Commerce Automation Framework | Playwright + TypeScript
 
-End-to-end UI automation framework built with **Playwright**, **TypeScript**, **Page Object Model**, and **Allure reporting** for the public e-commerce demo application [Automation Exercise](https://automationexercise.com/).
+A scalable, production-style UI automation framework built using **Playwright**, **TypeScript**, and the **Page Object Model (POM)** design pattern for the public e-commerce application **Automation Exercise**.
 
-This project is designed as an SDET portfolio project to demonstrate practical automation engineering skills, including test design, reusable page objects, assertions, reporting, CI execution, and data-driven test support.
+This framework demonstrates real-world QA Automation practices, including reusable page objects, robust locator strategies, end-to-end business flow validation, dynamic test data generation, reporting, and CI/CD integration.
 
-## Project Highlights
+---
 
-- UI automation using Playwright with TypeScript
-- Page Object Model implementation for maintainable test code
-- Positive and negative test coverage for authentication and registration flows
-- Dynamic test data generation using Faker
-- Playwright HTML report support
-- Allure reporter integration
-- Failure artifacts configured with screenshots, videos, and traces
-- GitHub Actions workflow for CI execution
-- Chromium browser execution configured for stable local and CI runs
+# 🚀 Project Overview
 
-## Application Under Test
+This project automates complete user journeys of an e-commerce application covering:
 
-**Website:** https://automationexercise.com/
+- User Registration
+- User Authentication
+- Product Search
+- Product Details Validation
+- Shopping Cart
+- Checkout
+- Payment Flow
+- Order Placement
+- Invoice Download
+- Category Navigation
+- Brand Navigation
+- Product Reviews
+- Recommended Products
+- Scroll Validations
 
-Automation Exercise is a public practice website commonly used for validating real-world e-commerce user journeys such as user registration, login, logout, account deletion, and validation messages.
+The framework is developed using industry-standard automation practices suitable for enterprise-level applications.
 
-## Tech Stack
+---
 
-| Area | Tool |
-| --- | --- |
-| Automation Framework | Playwright |
-| Language | TypeScript |
-| Test Runner | Playwright Test |
-| Design Pattern | Page Object Model |
-| Test Data | Faker |
-| Reporting | Playwright HTML Report, Allure |
-| CI/CD | GitHub Actions |
-| Runtime | Node.js |
+# 🌐 Application Under Test
 
-## Framework Structure
+**Automation Exercise**
+
+https://automationexercise.com/
+
+Automation Exercise is a public e-commerce application widely used for practicing Manual Testing and Automation Testing concepts.
+
+---
+
+# 🛠 Tech Stack
+
+| Technology | Description |
+|------------|-------------|
+| Playwright | UI Automation |
+| TypeScript | Programming Language |
+| Playwright Test | Test Runner |
+| Page Object Model | Design Pattern |
+| Faker | Dynamic Test Data |
+| Node.js | Runtime |
+| Git | Version Control |
+| GitHub | Source Code Repository |
+| GitHub Actions | CI/CD |
+| HTML Report | Test Reporting |
+| Allure Report | Advanced Reporting |
+
+---
+
+# 📂 Project Structure
 
 ```text
-AutomationExerciseProject/
-|-- .github/
-|   `-- workflows/
-|       `-- playwright.yml
-|-- config/
-|   |-- rondomDataGenerator.ts
-|   `-- testconfig.ts
-|-- pages/
-|   |-- homepage.ts
-|   |-- loginpage.ts
-|   `-- registrationpage.ts
-|-- tests/
-|   |-- LoginWithCorrectEmailAndPassword.spec.ts
-|   |-- LoginWithIncorrectEmailAndPassword.spec.ts
-|   |-- LogOutUser.spec.ts
-|   |-- RegisterUser.spec.ts
-|   `-- RegisterUserWithExistingEmail.spec.ts
-|-- playwright.config.ts
-|-- package.json
-`-- README.md
+AutomationExerciseProject
+│
+├── .github
+│   └── workflows
+│       └── playwright.yml
+│
+├── config
+│   ├── rondomDataGenerator.ts
+│   └── testconfig.ts
+│
+├── pages
+│   ├── homepage.ts
+│   ├── loginpage.ts
+│   ├── registrationpage.ts
+│   ├── productpage.ts
+│   ├── cartAndCheckOutpage.ts
+│   ├── categorypage.ts
+│   └── testCasespage.ts
+│
+├── tests
+│   ├── RegisterUser.spec.ts
+│   ├── LoginWithCorrectEmailAndPassword.spec.ts
+│   ├── LoginWithIncorrectEmailAndPassword.spec.ts
+│   ├── LogoutUser.spec.ts
+│   ├── RegisterUserWithExistingEmail.spec.ts
+│   ├── ContactUsForm.spec.ts
+│   ├── VerifyTestCasesPage.spec.ts
+│   ├── VerifyAllProductsAndProductDetailPage.spec.ts
+│   ├── SearchProduct.spec.ts
+│   ├── VerifySubscriptionInHomePage.spec.ts
+│   ├── VerifySubscriptionInCartPage.spec.ts
+│   ├── AddProductsInCart.spec.ts
+│   ├── VerifyProductQuantityInCart.spec.ts
+│   ├── PlaceOrderRegisterWhileCheckout.spec.ts
+│   ├── PlaceOrderBeforeRegisterCheckout.spec.ts
+│   ├── PlaceOrderLoginBeforeCheckout.spec.ts
+│   ├── RemoveProductsFromCart.spec.ts
+│   ├── ViewCategoryProducts.spec.ts
+│   ├── ViewCartBrandProducts.spec.ts
+│   ├── SearchProductsAndVerifyCartAfterLogin.spec.ts
+│   ├── AddReviewOnProduct.spec.ts
+│   ├── AddToCartFromRecommendedItems.spec.ts
+│   ├── VerifyAddressDetailsInCheckoutPage.spec.ts
+│   ├── DownloadInvoiceAfterPurchaseOrder.spec.ts
+│   ├── VerifyScrollUpUsingArrowButtonAndScrollDown.spec.ts
+│   └── VerifyScrollUpWithoutArrowButtonAndScrollDown.spec.ts
+│
+├── playwright.config.ts
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
 
-## Test Coverage
+---
 
-| Test Scenario | Description |
-| --- | --- |
-| Register User | Creates a new user account with complete profile information and verifies account creation |
-| Login With Valid Credentials | Creates a user, logs out, logs back in, and validates successful login |
-| Login With Invalid Credentials | Verifies error handling for incorrect email and password |
-| Logout User | Validates successful logout and redirection to the login page |
-| Register With Existing Email | Verifies duplicate email validation message |
+# ✅ Automated Test Scenarios
 
-## Key Framework Components
+| # | Test Scenario |
+|---|---------------|
+| 1 | Register User |
+| 2 | Login with Correct Email and Password |
+| 3 | Login with Incorrect Email and Password |
+| 4 | Logout User |
+| 5 | Register User with Existing Email |
+| 6 | Contact Us Form |
+| 7 | Verify Test Cases Page |
+| 8 | Verify All Products and Product Detail Page |
+| 9 | Search Product |
+| 10 | Verify Subscription in Home Page |
+| 11 | Verify Subscription in Cart Page |
+| 12 | Add Products in Cart |
+| 13 | Verify Product Quantity in Cart |
+| 14 | Place Order: Register while Checkout |
+| 15 | Place Order: Register before Checkout |
+| 16 | Place Order: Login before Checkout |
+| 17 | Remove Products from Cart |
+| 18 | View Category Products |
+| 19 | View Brand Products |
+| 20 | Search Products and Verify Cart After Login |
+| 21 | Add Review on Product |
+| 22 | Add to Cart from Recommended Items |
+| 23 | Verify Address Details in Checkout |
+| 24 | Download Invoice after Purchase Order |
+| 25 | Verify Scroll Up using Arrow Button |
+| 26 | Verify Scroll Up without Arrow Button |
 
-### Page Object Model
+---
 
-The framework separates page interactions from test logic using page classes:
+# 🏗 Framework Design
 
-- `HomePage` handles home page, signup, and login entry actions
-- `LoginPage` handles login verification, logout, account deletion, and login error validation
-- `RegistrationPage` handles account information, address details, account creation, and duplicate email validation
+The framework follows the **Page Object Model (POM)** architecture.
 
-This improves maintainability by keeping locators and reusable actions in one place instead of duplicating them across tests.
+Every page contains:
 
-### Configuration Layer
+- Page Locators
+- Page Actions
+- Reusable Methods
 
-The `config/testconfig.ts` file stores application URLs and reusable test credentials.
+Benefits:
 
-### Test Data Utility
+- High Maintainability
+- Low Code Duplication
+- Easy Scalability
+- Better Readability
 
-The `config/rondomDataGenerator.ts` file uses Faker to generate dynamic user data such as names, emails, phone numbers, addresses, usernames, and passwords. This reduces dependency on hard-coded test data for registration scenarios.
+---
 
-### Reporting and Debugging
+# 🔍 Locator Strategy
 
-The Playwright configuration includes:
+The framework uses stable Playwright locators such as:
 
-- HTML report
-- Dot and list reporters
-- Allure reporter
-- Screenshot on failure
-- Video retained on failure
-- Trace collection on first retry
-- Retry support for improved stability
+- getByRole()
+- getByText()
+- getByPlaceholder()
+- getByLabel()
+- CSS Selectors
+- Attribute Selectors
+- XPath (only where necessary)
 
-## Prerequisites
+Priority is always given to stable and maintainable locators.
 
-Install the following before running the framework:
+---
 
-- Node.js LTS version
-- npm
-- Git
+# 🎲 Dynamic Test Data
 
-## Installation
+Dynamic user data is generated using **Faker**, including:
 
-Clone the repository:
+- First Name
+- Last Name
+- Full Name
+- Email Address
+- Company
+- Address
+- Phone Number
+- Password
 
-```bash
-git clone <repository-url>
-cd AutomationExerciseProject
-```
+This eliminates dependency on hardcoded data.
 
-Install project dependencies:
+---
 
-```bash
-npm ci
-```
+# 📊 Reporting
 
-Install Playwright browsers:
+The framework supports:
 
-```bash
-npx playwright install
-```
+- Playwright HTML Report
+- Allure Report
+- Screenshot on Failure
+- Video Recording on Failure
+- Trace on First Retry
 
-## Running Tests
-
-Run the complete test suite:
-
-```bash
-npx playwright test
-```
-
-Run tests in headed mode:
-
-```bash
-npx playwright test --headed
-```
-
-Run a specific test file:
-
-```bash
-npx playwright test tests/RegisterUser.spec.ts
-```
-
-Run tests using the Chromium project:
-
-```bash
-npx playwright test --project=chromium
-```
-
-## Reports
-
-Open the Playwright HTML report:
+Generate reports:
 
 ```bash
 npx playwright show-report
 ```
 
-Allure results are generated in:
-
-```text
-allure-results/
-```
-
-If Allure CLI is installed, generate and open the Allure report:
+For Allure:
 
 ```bash
 allure generate allure-results --clean -o allure-report
+
 allure open allure-report
 ```
 
-## CI/CD
+---
 
-This project includes a GitHub Actions workflow at:
+# ⚙️ Installation
+
+Clone Repository
+
+```bash
+git clone https://github.com/<your-github-username>/AutomationExerciseProject.git
+```
+
+Navigate
+
+```bash
+cd AutomationExerciseProject
+```
+
+Install Dependencies
+
+```bash
+npm install
+```
+
+Install Browsers
+
+```bash
+npx playwright install
+```
+
+---
+
+# ▶️ Running Tests
+
+Run all tests
+
+```bash
+npx playwright test
+```
+
+Run headed mode
+
+```bash
+npx playwright test --headed
+```
+
+Run Chromium
+
+```bash
+npx playwright test --project=chromium
+```
+
+Run single test
+
+```bash
+npx playwright test tests/RegisterUser.spec.ts
+```
+
+---
+
+# 🔄 Continuous Integration
+
+GitHub Actions workflow is configured to:
+
+- Checkout Repository
+- Install Node.js
+- Install Dependencies
+- Install Playwright Browsers
+- Execute Tests
+- Upload Test Reports
+
+Workflow Location
 
 ```text
 .github/workflows/playwright.yml
 ```
 
-The pipeline runs on push and pull request events for the `main` and `master` branches.
+---
 
-CI steps include:
+# 💡 Features
 
-- Checkout repository
-- Setup Node.js
-- Install dependencies
-- Install Playwright browsers
-- Execute Playwright tests
-- Upload Playwright HTML report as an artifact
+- Scalable Architecture
+- End-to-End Automation
+- Data Driven Approach
+- Dynamic Test Data
+- Reusable Page Objects
+- Stable Locator Strategy
+- CI/CD Ready
+- HTML & Allure Reports
+- Failure Screenshots
+- Retry Mechanism
+- Clean Project Structure
+- Easy Maintenance
 
-## Playwright Configuration Summary
+---
 
-Important settings from `playwright.config.ts`:
+# 📈 Skills Demonstrated
 
-- Test directory: `./tests`
-- Browser project: Chromium
-- Workers: `1`
-- Retries: `1`
-- Timeout: `30 seconds`
-- Viewport: `1280 x 720`
-- Screenshot: only on failure
-- Video: retain on failure
-- Trace: on first retry
-- Reporters: HTML, dot, list, Allure
+This project demonstrates practical experience with:
 
-## Skills Demonstrated
+- Playwright Automation
+- TypeScript
+- Page Object Model (POM)
+- End-to-End Test Automation
+- UI Validation
+- Functional Testing
+- Regression Testing
+- Dynamic Test Data
+- Locator Strategy
+- Assertions
+- Reporting
+- Git & GitHub
+- GitHub Actions (CI/CD)
+- Automation Framework Design
 
-This framework demonstrates the following SDET skills:
+---
 
-- UI test automation with Playwright
-- TypeScript-based test development
-- Page Object Model design
-- Locator strategy using roles, text, placeholders, CSS, and XPath where required
-- Positive and negative test scenario coverage
-- Assertions for UI visibility, text validation, enabled state, checked state, and URL validation
-- Dynamic test data generation
-- Test reporting and debugging artifacts
-- CI integration with GitHub Actions
-- Maintainable project structure suitable for scaling
+# 👨‍💻 Author
 
-## Author
+## Ujjwal Tyagi
 
-**Ujjwal**
+**QA Automation Engineer | SDET**
 
-SDET / QA Automation Engineer
+### Technical Skills
 
+- Playwright
+- Selenium WebDriver
+- TypeScript
+- Java
+- TestNG
+- Page Object Model
+- API Testing (Learning)
+- Git
+- GitHub
+- CI/CD
+- Jenkins
+
+---
+
+⭐ If you found this project useful, feel free to fork it, star the repository, and connect with me on LinkedIn.
