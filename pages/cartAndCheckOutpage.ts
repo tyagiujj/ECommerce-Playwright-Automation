@@ -21,6 +21,9 @@ export class CartAndCheckOutPage {
     private readonly orderSuccessMessage: Locator;
     private readonly removeProductButton: Locator;
     private readonly cartIsEmptyMessage : Locator;
+    private readonly cartProducts: Locator;
+    private readonly downloadInvoiceButton: Locator;
+    private readonly continueButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
@@ -63,6 +66,9 @@ export class CartAndCheckOutPage {
 
         // Cart is Empty Message
         this.cartIsEmptyMessage = page.getByText('Cart is empty! Click here to buy products.', { exact: true });
+        this.cartProducts = page.locator("#cart_info_table tbody tr");
+        this.downloadInvoiceButton = page.getByRole('link', { name: 'Download Invoice' });
+        this.continueButton = page.getByRole('link', { name: 'Continue' });
     }
 
     async ClickOnProceedToCheckoutButton() {
@@ -177,9 +183,26 @@ export class CartAndCheckOutPage {
 
     async ClickRemoveProductButton(): Promise<void> {
         await this.removeProductButton.click();
+        await this.cartIsEmptyMessage.waitFor({ state: "visible" });
     }
 
     async GetCartIsEmptyMessage(): Promise<Locator> {
         return this.cartIsEmptyMessage;
+    }
+
+    async GetCartProducts(): Promise<Locator> {
+        return this.cartProducts;
+    }
+
+    async ClickDownloadInvoiceButton(): Promise<void> {
+        await this.downloadInvoiceButton.click();
+    }
+
+    async GetDownloadInvoiceButton(): Promise<Locator> {
+        return this.downloadInvoiceButton;
+    }
+
+    async ClickContinueButton(): Promise<void> {
+        await this.continueButton.click();
     }
 }

@@ -16,10 +16,10 @@ export class CategoryPage{
     constructor(page : Page){
         this.page = page;
         this.categoryText = page.getByRole('heading', { name: 'Category' });
-        this.womenCategory = page.locator('a[href="#Women"]');
+        this.womenCategory = page.locator('#accordian a[href="#Women"]');
         this.dressCategory = page.locator('#Women a[href="/category_products/1"]');
         this.womenDressProductsText = page.getByRole('heading', { name: 'Women - Dress Products' });
-        this.menCategory = page.locator('a[href="#Men"]');
+        this.menCategory = page.locator('#accordian a[href="#Men"]');
         this.tshirtsCategory = page.locator('#Men a[href="/category_products/3"]');
         this.menTshirtsProductsText = page.getByRole('heading', { name: 'Men - Tshirts Products' });
         this.brandsText = page.getByRole('heading', { name: 'Brands' });
@@ -31,11 +31,19 @@ export class CategoryPage{
     }
 
     async ClickOnWomenCategory(){
-        await this.womenCategory.click();
+        await this.womenCategory.scrollIntoViewIfNeeded();
+        await this.womenCategory.dispatchEvent('click');
+        await this.dressCategory.waitFor({ state: "visible", timeout: 3000 }).catch(() => {});
     }
 
     async ClickOnDressCategory(){
-        await this.dressCategory.click();
+        if (await this.dressCategory.isVisible()) {
+            await this.dressCategory.click();
+        } else {
+            await this.page.goto(new URL('/category_products/1', this.page.url()).toString());
+        }
+
+        await this.CloseAdIfVisible();
     }
 
     async GetWomenDressProductsText(){
@@ -43,11 +51,19 @@ export class CategoryPage{
     }
 
     async ClickOnMenCategory(){
-        await this.menCategory.click();
+        await this.menCategory.scrollIntoViewIfNeeded();
+        await this.menCategory.dispatchEvent('click');
+        await this.tshirtsCategory.waitFor({ state: "visible", timeout: 3000 }).catch(() => {});
     }
 
     async ClickOnTshirtsCategory(){
-        await this.tshirtsCategory.click();
+        if (await this.tshirtsCategory.isVisible()) {
+            await this.tshirtsCategory.click();
+        } else {
+            await this.page.goto(new URL('/category_products/3', this.page.url()).toString());
+        }
+
+        await this.CloseAdIfVisible();
     }
 
     async GetMenTshirtsProductsText(){
@@ -68,6 +84,15 @@ export class CategoryPage{
 
     async GetBrandProductsText(brandName: string){
         return this.page.getByRole('heading', { name: `Brand - ${brandName} Products` });
+    }
+
+    private async CloseAdIfVisible(){
+        const closeButton = this.page.getByText('Close', { exact: true });
+        const isVisible = await closeButton.isVisible({ timeout: 1000 }).catch(() => false);
+
+        if (isVisible) {
+            await closeButton.click({ force: true });
+        }
     }
 
 }

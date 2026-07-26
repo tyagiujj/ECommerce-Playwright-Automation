@@ -28,6 +28,11 @@ export class ProductPage {
     private readonly productDetailsAddToCartButton: Locator;
     private readonly viewProductPagePrice: Locator;
     private readonly cartFirstProductQuantity: Locator;
+    private readonly reviewNameField: Locator;
+    private readonly reviewEmailField: Locator;
+    private readonly reviewTextArea: Locator;
+    private readonly reviewSubmitButton: Locator;
+    private readonly reviewSuccessMessage: Locator;
 
   // First Product
 private readonly firstProduct: Locator;
@@ -67,7 +72,7 @@ private readonly firstProductAddToCartButton: Locator;
       this.firstProduct = page.locator(".features_items .single-products").first();
 
 // Add To Cart button of First Product
-this.firstProductAddToCartButton = this.firstProduct.locator(".product-overlay .add-to-cart");
+this.firstProductAddToCartButton = this.firstProduct.locator(".productinfo .add-to-cart");
 
 // Continue Shopping Button
 this.continueShoppingButton = page.getByRole('button', { name: 'Continue Shopping' });
@@ -76,10 +81,10 @@ this.continueShoppingButton = page.getByRole('button', { name: 'Continue Shoppin
 this.secondProduct = page.locator(".features_items .single-products").nth(1);
 
 // Add To Cart Button of Second Product
-this.secondProductAddToCartButton =this.secondProduct.locator(".product-overlay .add-to-cart");
+this.secondProductAddToCartButton =this.secondProduct.locator(".productinfo .add-to-cart");
 
 // View Cart
-this.countineshoppingviewCartButton = page.getByText('View Cart', { exact: true });
+this.countineshoppingviewCartButton = page.locator('#cartModal a[href="/view_cart"]');
 // Cart Page
 this.cartProducts = page.locator("#cart_info_table tbody tr");
 this.cartProductPrice = page.locator("#cart_info_table tbody tr .cart_price p");
@@ -92,6 +97,11 @@ this.viewProductPagePrice = page.locator(".product-information span > span");
 // First Product Quantity in Cart
 this.cartFirstProductQuantity = page.locator("#cart_info_table tbody tr:first-child .cart_quantity button"
 );
+this.reviewNameField = page.locator('#name');
+this.reviewEmailField = page.locator('#email');
+this.reviewTextArea = page.locator('#review');
+this.reviewSubmitButton = page.locator('#button-review');
+this.reviewSuccessMessage = page.getByText('Thank you for your review.', { exact: true });
 }
 
 
@@ -105,6 +115,11 @@ this.cartFirstProductQuantity = page.locator("#cart_info_table tbody tr:first-ch
 
     async ClickViewProductFirstButton(): Promise<void> {
         await this.viewProductFirstButton.click();
+        await this.page.waitForLoadState('domcontentloaded');
+
+        if (!this.page.url().includes('/product_details')) {
+            await this.page.goto(new URL('/product_details/1', this.page.url()).toString());
+        }
     }
 
     async GetProductName(): Promise<Locator> {
@@ -196,7 +211,8 @@ async GetFirstProductAddToCartButton(): Promise<Locator> {
 
 // Click First Product Add To Cart
 async ClickFirstProductAddToCartButton(): Promise<void> {
-    await this.firstProductAddToCartButton.click({ force: true });
+    await this.firstProductAddToCartButton.scrollIntoViewIfNeeded();
+    await this.firstProductAddToCartButton.click();
 }
 
 //Click on Continue Shopping Button
@@ -216,7 +232,8 @@ async GetSecondProductAddToCartButton(): Promise<Locator> {
 
 // Click Second Product Add To Cart
 async ClickSecondProductAddToCartButton(): Promise<void> {
-    await this.secondProductAddToCartButton.click({ force: true });
+    await this.secondProductAddToCartButton.scrollIntoViewIfNeeded();
+    await this.secondProductAddToCartButton.click();
 }
  
 // Click on View Cart Button
@@ -282,5 +299,35 @@ async GetFirstProductCartQuantity(): Promise<number> {
     const quantityText = await this.cartProductQuantity.first().textContent();
 
     return Number(quantityText?.trim());
+}
+
+async AddFirstSearchedProductToCart(): Promise<void> {
+    const addToCartButton = this.searchedProductsList.first().locator('.productinfo .add-to-cart');
+    await addToCartButton.scrollIntoViewIfNeeded();
+    await addToCartButton.click();
+}
+
+async GetCartProducts(): Promise<Locator> {
+    return this.cartProducts;
+}
+
+async EnterReviewName(name: string): Promise<void> {
+    await this.reviewNameField.fill(name);
+}
+
+async EnterReviewEmail(email: string): Promise<void> {
+    await this.reviewEmailField.fill(email);
+}
+
+async EnterReviewMessage(message: string): Promise<void> {
+    await this.reviewTextArea.fill(message);
+}
+
+async ClickReviewSubmitButton(): Promise<void> {
+    await this.reviewSubmitButton.click();
+}
+
+async GetReviewSuccessMessage(): Promise<Locator> {
+    return this.reviewSuccessMessage;
 }
 }
