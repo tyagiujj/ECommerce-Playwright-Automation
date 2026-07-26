@@ -9,6 +9,8 @@ export class CategoryPage{
     private readonly menCategory : Locator;
     private readonly tshirtsCategory : Locator;
     private readonly menTshirtsProductsText : Locator;
+    private readonly brandsText : Locator;
+    private readonly brandLinks : Locator;
 
 
     constructor(page : Page){
@@ -20,6 +22,8 @@ export class CategoryPage{
         this.menCategory = page.locator('a[href="#Men"]');
         this.tshirtsCategory = page.locator('#Men a[href="/category_products/3"]');
         this.menTshirtsProductsText = page.getByRole('heading', { name: 'Men - Tshirts Products' });
+        this.brandsText = page.getByRole('heading', { name: 'Brands' });
+        this.brandLinks = page.locator('.brands-name a');
     }
 
     async getCategoryText(){
@@ -48,6 +52,22 @@ export class CategoryPage{
 
     async GetMenTshirtsProductsText(){
         return this.menTshirtsProductsText;
+    }
+
+    async GetBrandsText(){
+        return this.brandsText;
+    }
+
+    async GetBrandLinks(){
+        return this.brandLinks;
+    }
+
+    async ClickOnBrandName(brandName: string){
+        await this.brandLinks.filter({ hasText: brandName }).click();
+    }
+
+    async GetBrandProductsText(brandName: string){
+        return this.page.getByRole('heading', { name: `Brand - ${brandName} Products` });
     }
 
 }
