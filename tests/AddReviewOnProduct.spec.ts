@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
-import { HomePage } from '../pages/homepage';
-import { ProductPage } from '../pages/productpage';
-import { TestConfig } from '../config/testconfig';
-import { RandomDataUtil } from '../config/rondomDataGenerator';
+import { HomePage } from '@pages/homepage';
+import { ProductPage } from '@pages/productpage';
+import { TestConfig } from '@config/testconfig';
+import { RandomDataUtil } from '@config/rondomDataGenerator';
 
 let homePage: HomePage;
 let productPage: ProductPage;

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { HomePage } from '../pages/homepage';
-import { TestConfig } from '../config/testconfig';
-import { CommonActions } from '../utils/commonActions';
+import { HomePage } from '@pages/homepage';
+import { TestConfig } from '@config/testconfig';
+import { CommonActions } from '@utils/commonActions';
 
 let homePage: HomePage;
 let testConfig: TestConfig;

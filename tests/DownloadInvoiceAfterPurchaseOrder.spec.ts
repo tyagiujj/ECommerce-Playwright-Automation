@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-import { CartAndCheckOutPage } from '../pages/cartAndCheckOutpage';
-import { HomePage } from '../pages/homepage';
-import { LoginPage } from '../pages/loginpage';
-import { ProductPage } from '../pages/productpage';
-import { RegistrationPage } from '../pages/registrationpage';
-import { TestConfig } from '../config/testconfig';
-import { RandomDataUtil } from '../config/rondomDataGenerator';
+import { CartAndCheckOutPage } from '@pages/cartAndCheckOutpage';
+import { HomePage } from '@pages/homepage';
+import { LoginPage } from '@pages/loginpage';
+import { ProductPage } from '@pages/productpage';
+import { RegistrationPage } from '@pages/registrationpage';
+import { TestConfig } from '@config/testconfig';
+import { RandomDataUtil } from '@config/rondomDataGenerator';
 
 let cartPage: CartAndCheckOutPage;
 let homePage: HomePage;
