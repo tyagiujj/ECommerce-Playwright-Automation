@@ -87,6 +87,23 @@ npm run report                                     # run ke baad report
 
 ---
 
+## GitHub CLI (`gh`): check CI from the terminal
+
+`gh` was installed on 2026-10-28 and is logged in. If the terminal does not find `gh`, restart it (or use the full path `"C:\Program Files\GitHub CLI\gh.exe"`).
+
+```
+gh run list --limit 5                           # last 5 CI runs and their result
+gh run watch <run-id>                           # follow a running CI run live
+gh run view <run-id> --log                      # full CI log
+gh run download <run-id> -n playwright-report   # download the HTML report (screenshots, traces)
+gh secret list                                  # names of the repo secrets (values are never shown)
+gh variable list                                # repo variables with their values
+```
+
+**When:** CI is red and you need to know which test failed and why. Open the downloaded report with `npx playwright show-report <folder>`.
+
+---
+
 ## Interview tip
 
 **Q:** `npx playwright test` aur `npm test` me kya fark hai?

@@ -9,8 +9,8 @@ Each day records **what** changed, **why** it matters in real projects, and **wh
 
 | # | Step | Status |
 |---|------|--------|
-| 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | 🔄 In progress (tsconfig, aliases, npm scripts, `.env` done; CI left) |
-| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | ⬜ |
+| 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | ✅ Done (tsconfig, aliases, npm scripts, `.env`, CI with GitHub Secrets) |
+| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | 🔄 In progress (ad-blocking fixture done; page objects next) |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `async` getters for locators | ⬜ |
 | 4 | Reusable business flows (e.g. register user), plus API-based setup for speed | ⬜ |
 | 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
@@ -250,6 +250,43 @@ Start with **Step 1 (Foundation)**, because every later step (fixtures, CI, envi
 - Wait for a real condition (`waitForURL`, web-first assertions), never a guessed time.
 - Unique test data matters on shared environments.
 
+### CI result (run 40747532056, commit c457eb6)
+- ✅ **Green, for the first time since 2026-07-26.** 25 passed, 1 flaky, 0 failed, in 2.3 min (the red runs took about 8.5 min, because failing tests wait for their full timeout and then retry).
+- Flaky: VerifyScrollUpUsingArrowButtonAndScrollDown, `locator.click: Element is not visible` on `#scrollUp`, clicked with `force: true`. It is left for Step 3/5 (no `force: true`, wait for the arrow to appear).
+
+---
+
+## Summary of Day 2 and Day 3 (2026-10-28 to 2026-10-29)
+
+### What we did
+| # | Change | Where | Result |
+|---|--------|-------|--------|
+| 1 | npm scripts | `package.json`, `COMMANDS.md` | One standard command for every task (`npm test`, `npm run typecheck`, ...) |
+| 2 | Config in environment variables | `.env`, `.env.example`, `.gitignore`, `playwright.config.ts`, `config/testconfig.ts`, `tsconfig.json` | No password in code; switching environments means changing one value |
+| 3 | CI uses npm scripts and GitHub Secrets | `.github/workflows/playwright.yml` | Type check runs first; secrets reach only the test step |
+| 4 | CI failure analysis | `gh` CLI, CI logs, traces, screenshots | Found the real cause: Google ads |
+| 5 | Ad-blocking custom fixture | `fixtures/baseTest.ts`, all 26 tests (line 1) | One file protects every test |
+| 6 | `test.slow()` on 7 sign-up tests | 7 test files | Long flows get 90 s; short tests keep 30 s |
+| 7 | Wait for the cart page to load | `pages/homepage.ts`, `pages/productpage.ts` | Fixed a hidden race condition |
+| 8 | Stable empty-cart locator | `pages/cartAndCheckOutpage.ts` | No longer breaks when text changes |
+| 9 | Unique sign-up emails | `config/rondomDataGenerator.ts` | No more "Email Address already exist!" |
+
+**CI before → after:** 19 passed, 3 flaky, 4 failed (8.4 min) → 25 passed, 1 flaky, 0 failed (2.3 min).
+
+### Key lessons
+1. **Keep config out of code.** Code knows the *name* (`BASE_URL`), the environment provides the *value* (12-Factor App).
+2. **Never commit secrets.** `.gitignore` protects only future commits; a pushed secret must be rotated.
+3. **Fail fast.** `requireEnv()` and the type-check step turn hidden problems into clear, early errors.
+4. **Single source of truth.** Login and test-case URLs are built from `BASE_URL`, not stored three times.
+5. **A timeout is a symptom, not a cause.** The screenshot, trace and page snapshot show the real reason.
+6. **Compare with earlier runs** before blaming the latest change. If different tests fail on each run, suspect something random (ads, data, timing).
+7. **Remove a problem at its source.** Blocking the ad script is better than clicking "Close" on an ad that appears at random.
+8. **Fixtures beat copy-paste setup.** `base.extend()`, setup → `await use()` → teardown; one file changes all tests.
+9. **Fixing one cause can expose the next.** Faster pages (no ads) revealed a race condition that the ads had been hiding.
+10. **Wait for a real condition, never a guessed time.** `waitForURL` waits exactly as long as needed; `waitForTimeout` is a guess.
+11. **Check how a locator is used before changing it.** My first empty-cart locator broke the assertion that used it.
+12. **Use unique test data on shared environments.** A timestamp makes every email unique.
+13. **Raise a timeout only for tests that are truly long** (`test.slow()`), and fix slow tests caused by hard waits instead of hiding them.
+
 ### Next
-- Commit, push, and check CI.
-- Part 2.2: page objects as fixtures.
+- Part 2.2: page objects as fixtures (remove `let` variables and `beforeEach` from the 26 tests).

@@ -1,59 +1,51 @@
 # 🛒 E-Commerce Automation Framework | Playwright + TypeScript
 
-A scalable, production-style UI automation framework built using **Playwright**, **TypeScript**, and the **Page Object Model (POM)** design pattern for the public e-commerce application **Automation Exercise**.
+[![Playwright Tests](https://github.com/tyagiujj/ECommerce-Playwright-Automation/actions/workflows/playwright.yml/badge.svg)](https://github.com/tyagiujj/ECommerce-Playwright-Automation/actions/workflows/playwright.yml)
 
-This framework demonstrates real-world QA Automation practices, including reusable page objects, robust locator strategies, end-to-end business flow validation, dynamic test data generation, reporting, and CI/CD integration.
+A UI automation framework built with **Playwright**, **TypeScript** and the **Page Object Model (POM)** for the public e-commerce application **Automation Exercise**.
+
+The framework is being hardened step by step towards industry standards: environment-based configuration, custom fixtures, CI with GitHub Secrets, and stable, non-flaky tests. Every change is logged with its reason in [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md).
+
+> **Last updated:** 2026-10-29 · **CI status:** ✅ green (25 passed, 1 flaky, 0 failed)
 
 ---
 
 # 🚀 Project Overview
 
-This project automates complete user journeys of an e-commerce application covering:
+This project automates complete user journeys of an e-commerce application:
 
-- User Registration
-- User Authentication
-- Product Search
-- Product Details Validation
+- User Registration and Authentication
+- Product Search and Product Details
 - Shopping Cart
-- Checkout
-- Payment Flow
-- Order Placement
+- Checkout, Payment and Order Placement
 - Invoice Download
-- Category Navigation
-- Brand Navigation
-- Product Reviews
-- Recommended Products
-- Scroll Validations
-
-The framework is developed using industry-standard automation practices suitable for enterprise-level applications.
+- Category and Brand Navigation
+- Product Reviews and Recommended Products
+- Subscription, Contact Us and Scroll Validations
 
 ---
 
 # 🌐 Application Under Test
 
-**Automation Exercise**
+**Automation Exercise**: https://automationexercise.com/
 
-https://automationexercise.com/
-
-Automation Exercise is a public e-commerce application widely used for practicing Manual Testing and Automation Testing concepts.
+A public e-commerce application widely used to practise manual and automation testing.
 
 ---
 
 # 🛠 Tech Stack
 
-| Technology | Description |
-|------------|-------------|
-| Playwright | UI Automation |
-| TypeScript | Programming Language |
-| Playwright Test | Test Runner |
-| Page Object Model | Design Pattern |
-| Faker | Dynamic Test Data |
-| Node.js | Runtime |
-| Git | Version Control |
-| GitHub | Source Code Repository |
+| Technology | Purpose |
+|------------|---------|
+| Playwright Test | Test runner and browser automation |
+| TypeScript (strict mode) | Programming language and type checking |
+| Page Object Model | Design pattern |
+| Custom fixtures | Shared test setup (ad blocking) |
+| dotenv | Environment variables from `.env` |
+| Faker | Dynamic test data |
 | GitHub Actions | CI/CD |
-| HTML Report | Test Reporting |
-| Allure Report | Advanced Reporting |
+| GitHub Secrets / Variables | Credentials and config in CI |
+| HTML Report / Allure | Reporting |
 
 ---
 
@@ -62,280 +54,209 @@ Automation Exercise is a public e-commerce application widely used for practicin
 ```text
 AutomationExerciseProject
 │
-├── .github
-│   └── workflows
-│       └── playwright.yml
+├── .github/workflows/
+│   └── playwright.yml          # CI: type check, tests, report upload
 │
-├── config
-│   ├── rondomDataGenerator.ts
-│   └── testconfig.ts
+├── config/
+│   ├── testconfig.ts           # Reads BASE_URL, USER_EMAIL, USER_PASSWORD from the environment
+│   └── rondomDataGenerator.ts  # Faker-based test data (unique emails)
 │
-├── pages
+├── fixtures/
+│   └── baseTest.ts             # Custom test: blocks Google ad requests for every test
+│
+├── pages/                      # Page objects
 │   ├── homepage.ts
 │   ├── loginpage.ts
 │   ├── registrationpage.ts
 │   ├── productpage.ts
 │   ├── cartAndCheckOutpage.ts
-│   ├── categorypage.ts
+│   ├── Categorypage.ts
+│   ├── contactUsformpage.ts
 │   └── testCasespage.ts
 │
-├── tests
-│   ├── RegisterUser.spec.ts
-│   ├── LoginWithCorrectEmailAndPassword.spec.ts
-│   ├── LoginWithIncorrectEmailAndPassword.spec.ts
-│   ├── LogoutUser.spec.ts
-│   ├── RegisterUserWithExistingEmail.spec.ts
-│   ├── ContactUsForm.spec.ts
-│   ├── VerifyTestCasesPage.spec.ts
-│   ├── VerifyAllProductsAndProductDetailPage.spec.ts
-│   ├── SearchProduct.spec.ts
-│   ├── VerifySubscriptionInHomePage.spec.ts
-│   ├── VerifySubscriptionInCartPage.spec.ts
-│   ├── AddProductsInCart.spec.ts
-│   ├── VerifyProductQuantityInCart.spec.ts
-│   ├── PlaceOrderRegisterWhileCheckout.spec.ts
-│   ├── PlaceOrderBeforeRegisterCheckout.spec.ts
-│   ├── PlaceOrderLoginBeforeCheckout.spec.ts
-│   ├── RemoveProductsFromCart.spec.ts
-│   ├── ViewCategoryProducts.spec.ts
-│   ├── ViewCartBrandProducts.spec.ts
-│   ├── SearchProductsAndVerifyCartAfterLogin.spec.ts
-│   ├── AddReviewOnProduct.spec.ts
-│   ├── AddToCartFromRecommendedItems.spec.ts
-│   ├── VerifyAddressDetailsInCheckoutPage.spec.ts
-│   ├── DownloadInvoiceAfterPurchaseOrder.spec.ts
-│   ├── VerifyScrollUpUsingArrowButtonAndScrollDown.spec.ts
-│   └── VerifyScrollUpWithoutArrowButtonAndScrollDown.spec.ts
+├── tests/                      # 26 spec files, one scenario each
+├── utils/
+│   └── commonActions.ts
+├── testData/
+│   └── sample.pdf              # Upload file for the Contact Us test
 │
-├── playwright.config.ts
-├── package.json
-├── tsconfig.json
+├── .env.example                # Template for your local .env (never commit .env)
+├── playwright.config.ts        # Loads .env, reporters, retries, browser settings
+├── tsconfig.json               # Strict mode and path aliases (@pages, @config, @utils, @fixtures)
+├── package.json                # npm scripts
+├── COMMANDS.md                 # Every command explained: what, why, when
+├── FRAMEWORK_JOURNEY.md        # Daily log of framework improvements
 └── README.md
 ```
 
 ---
 
-# ✅ Automated Test Scenarios
+# ⚙️ Setup
 
-| # | Test Scenario |
-|---|---------------|
-| 1 | Register User |
-| 2 | Login with Correct Email and Password |
-| 3 | Login with Incorrect Email and Password |
-| 4 | Logout User |
-| 5 | Register User with Existing Email |
-| 6 | Contact Us Form |
-| 7 | Verify Test Cases Page |
-| 8 | Verify All Products and Product Detail Page |
-| 9 | Search Product |
-| 10 | Verify Subscription in Home Page |
-| 11 | Verify Subscription in Cart Page |
-| 12 | Add Products in Cart |
-| 13 | Verify Product Quantity in Cart |
-| 14 | Place Order: Register while Checkout |
-| 15 | Place Order: Register before Checkout |
-| 16 | Place Order: Login before Checkout |
-| 17 | Remove Products from Cart |
-| 18 | View Category Products |
-| 19 | View Brand Products |
-| 20 | Search Products and Verify Cart After Login |
-| 21 | Add Review on Product |
-| 22 | Add to Cart from Recommended Items |
-| 23 | Verify Address Details in Checkout |
-| 24 | Download Invoice after Purchase Order |
-| 25 | Verify Scroll Up using Arrow Button |
-| 26 | Verify Scroll Up without Arrow Button |
-
----
-
-# 🏗 Framework Design
-
-The framework follows the **Page Object Model (POM)** architecture.
-
-Every page contains:
-
-- Page Locators
-- Page Actions
-- Reusable Methods
-
-Benefits:
-
-- High Maintainability
-- Low Code Duplication
-- Easy Scalability
-- Better Readability
-
----
-
-# 🔍 Locator Strategy
-
-The framework uses stable Playwright locators such as:
-
-- getByRole()
-- getByText()
-- getByPlaceholder()
-- getByLabel()
-- CSS Selectors
-- Attribute Selectors
-- XPath (only where necessary)
-
-Priority is always given to stable and maintainable locators.
-
----
-
-# 🎲 Dynamic Test Data
-
-Dynamic user data is generated using **Faker**, including:
-
-- First Name
-- Last Name
-- Full Name
-- Email Address
-- Company
-- Address
-- Phone Number
-- Password
-
-This eliminates dependency on hardcoded data.
-
----
-
-# 📊 Reporting
-
-The framework supports:
-
-- Playwright HTML Report
-- Allure Report
-- Screenshot on Failure
-- Video Recording on Failure
-- Trace on First Retry
-
-Generate reports:
+**1. Clone and install**
 
 ```bash
-npx playwright show-report
-```
-
-For Allure:
-
-```bash
-allure generate allure-results --clean -o allure-report
-
-allure open allure-report
-```
-
----
-
-# ⚙️ Installation
-
-Clone Repository
-
-```bash
-git clone https://github.com/<your-github-username>/AutomationExerciseProject.git
-```
-
-Navigate
-
-```bash
-cd AutomationExerciseProject
-```
-
-Install Dependencies
-
-```bash
-npm install
-```
-
-Install Browsers
-
-```bash
+git clone https://github.com/tyagiujj/ECommerce-Playwright-Automation.git
+cd ECommerce-Playwright-Automation
+npm ci
 npx playwright install
 ```
+
+**2. Create your `.env` file**
+
+Copy `.env.example` to `.env` and fill in a test account:
+
+```text
+BASE_URL=https://automationexercise.com/
+USER_EMAIL=your-test-email@example.com
+USER_PASSWORD=your-test-password
+```
+
+`.env` is git-ignored, so your credentials never reach GitHub. If a variable is missing, tests stop at once with a clear message, for example `Missing environment variable "BASE_URL"`.
 
 ---
 
 # ▶️ Running Tests
 
-Run all tests
+| Command | What it does |
+|---------|--------------|
+| `npm test` | Run all tests (headless) |
+| `npm run test:headed` | Run with the browser visible |
+| `npm run test:ui` | Open Playwright UI mode |
+| `npm run test:debug` | Step through a test in the Playwright Inspector |
+| `npm run test:list` | List tests without running them |
+| `npm run report` | Open the last HTML report |
+| `npm run typecheck` | Check TypeScript errors without opening a browser |
+
+Pass extra arguments after `--`:
 
 ```bash
-npx playwright test
+npm test -- tests/SearchProduct.spec.ts   # one file
+npm test -- -g "Login"                     # tests whose name contains "Login"
 ```
 
-Run headed mode
+See [COMMANDS.md](COMMANDS.md) for every command with an explanation.
 
-```bash
-npx playwright test --headed
-```
+---
 
-Run Chromium
+# 🏗 Framework Design
 
-```bash
-npx playwright test --project=chromium
-```
+### Page Object Model
+Each page class holds its locators and actions, so tests read like business steps and a locator change is fixed in one place.
 
-Run single test
+### Custom fixtures
+All tests import `test` and `expect` from `@fixtures/baseTest` instead of `@playwright/test`. The fixture overrides the browser `context` and aborts requests to Google ad servers. The site's full-screen ads and injected ad links used to block clicks and change page text, which made CI fail at random.
 
-```bash
-npx playwright test tests/RegisterUser.spec.ts
-```
+### Environment-based configuration
+`config/testconfig.ts` reads values from `process.env` through `requireEnv()`. Locally they come from `.env` (loaded by `dotenv` in `playwright.config.ts`); in CI they come from GitHub Secrets and Variables. Login and test-case URLs are built from `BASE_URL`, so switching environments means changing one value.
+
+### Stability practices
+- Wait for real conditions (`waitForURL`, web-first assertions) instead of fixed sleeps.
+- Locators based on the site's own structure (`#empty_cart p`) instead of long exact text.
+- Unique sign-up emails (`<username>.<timestamp>@example.com`) on this shared public site.
+- `test.slow()` only for long end-to-end flows (full sign-up), so short tests keep the 30 s timeout.
 
 ---
 
 # 🔄 Continuous Integration
 
-GitHub Actions workflow is configured to:
+GitHub Actions (`.github/workflows/playwright.yml`) runs on every push and pull request to `main`:
 
-- Checkout Repository
-- Install Node.js
-- Install Dependencies
-- Install Playwright Browsers
-- Execute Tests
-- Upload Test Reports
+1. Checkout and install Node.js
+2. `npm ci` and install Playwright browsers
+3. **Type check** (`npm run typecheck`): fails in seconds on a code error
+4. **Run tests** (`npm test`) with `BASE_URL` from a repository Variable and `USER_EMAIL` / `USER_PASSWORD` from repository Secrets
+5. Upload the HTML report as an artifact
 
-Workflow Location
+To run CI in your own fork, add under **Settings → Secrets and variables → Actions**:
 
-```text
-.github/workflows/playwright.yml
-```
-
----
-
-# 💡 Features
-
-- Scalable Architecture
-- End-to-End Automation
-- Data Driven Approach
-- Dynamic Test Data
-- Reusable Page Objects
-- Stable Locator Strategy
-- CI/CD Ready
-- HTML & Allure Reports
-- Failure Screenshots
-- Retry Mechanism
-- Clean Project Structure
-- Easy Maintenance
+| Type | Name |
+|------|------|
+| Secret | `USER_EMAIL` |
+| Secret | `USER_PASSWORD` |
+| Variable | `BASE_URL` |
 
 ---
 
-# 📈 Skills Demonstrated
+# 📊 Reporting
 
-This project demonstrates practical experience with:
+- Playwright HTML report (`npm run report`)
+- Allure results in `allure-results/` (generating the report needs the Allure CLI: `allure generate allure-results --clean -o allure-report`, then `allure open allure-report`)
+- Screenshot and video on failure, trace on first retry
 
-- Playwright Automation
-- TypeScript
-- Page Object Model (POM)
-- End-to-End Test Automation
-- UI Validation
-- Functional Testing
-- Regression Testing
-- Dynamic Test Data
-- Locator Strategy
-- Assertions
-- Reporting
-- Git & GitHub
-- GitHub Actions (CI/CD)
-- Automation Framework Design
+---
+
+# ✅ Automated Test Scenarios
+
+| # | Test Scenario | Spec file |
+|---|---------------|-----------|
+| 1 | Register User | `RegisterUser.spec.ts` |
+| 2 | Login with Correct Email and Password | `LoginWithCorrectEmailAndPassword.spec.ts` |
+| 3 | Login with Incorrect Email and Password | `LoginWithIncorrectEmailAndPassword.spec.ts` |
+| 4 | Logout User | `LogOutUser.spec.ts` |
+| 5 | Register User with Existing Email | `RegisterUserWithExistingEmail.spec.ts` |
+| 6 | Contact Us Form | `ContactUsForm.spec.ts` |
+| 7 | Verify Test Cases Page | `VerifyTestCasesPage.spec.ts` |
+| 8 | Verify All Products and Product Detail Page | `VerifyAllProductsandproductdetailpage.spec.ts` |
+| 9 | Search Product | `SearchProduct.spec.ts` |
+| 10 | Verify Subscription in Home Page | `VerifySubscriptioninhomepage.spec.ts` |
+| 11 | Verify Subscription in Cart Page | `VerifySubscriptioninCartpage.spec.ts` |
+| 12 | Add Products in Cart | `AddProductsinCart.spec.ts` |
+| 13 | Verify Product Quantity in Cart | `VerifyProductquantityinCart.spec.ts` |
+| 14 | Place Order: Register while Checkout | `PlaceOrderRegisterwhileCheckout.spec.ts` |
+| 15 | Place Order: Register before Checkout | `PlaceOrderBeforeRegisterCheckout.spec.ts` |
+| 16 | Place Order: Login before Checkout | `PlaceOrderLoginBeforeCheckOut.spec.ts` |
+| 17 | Remove Products from Cart | `RemoveProductsFromCart.spec.ts` |
+| 18 | View Category Products | `ViewCategoryProducts.spec.ts` |
+| 19 | View and Cart Brand Products | `ViewAndCartBrandProducts.spec.ts` |
+| 20 | Search Products and Verify Cart After Login | `SearchProductsAndVerifyCartAfterLogin.spec.ts` |
+| 21 | Add Review on Product | `AddReviewOnProduct.spec.ts` |
+| 22 | Add to Cart from Recommended Items | `AddToCartFromRecommendedItems.spec.ts` |
+| 23 | Verify Address Details in Checkout | `VerifyAddressDetailsInCheckoutPage.spec.ts` |
+| 24 | Download Invoice after Purchase Order | `DownloadInvoiceAfterPurchaseOrder.spec.ts` |
+| 25 | Verify Scroll Up using Arrow Button | `VerifyScrollUpUsingArrowButtonAndScrollDown.spec.ts` |
+| 26 | Verify Scroll Up without Arrow Button | `VerifyScrollUpWithoutArrowButtonAndScrollDown.spec.ts` |
+
+---
+
+# 🗺 Improvement Roadmap
+
+| # | Step | Status |
+|---|------|--------|
+| 1 | Foundation: `tsconfig.json`, path aliases, npm scripts, `.env`, CI with GitHub Secrets | ✅ Done |
+| 2 | Custom fixtures: ad blocking, then page objects injected into tests | 🔄 In progress |
+| 3 | Page Object cleanup: naming conventions, `readonly` locators, no `force: true` | ⬜ |
+| 4 | Reusable business flows (register user) and API-based setup | ⬜ |
+| 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
+| 6 | Test data management: data files, typed models, builders | ⬜ |
+| 7 | Tagging (`@smoke`, `@regression`) | ⬜ |
+| 8 | ESLint, Prettier and Husky pre-commit hooks | ⬜ |
+| 9 | Logging and reporting: Allure steps, attachments | ⬜ |
+| 10 | CI/CD: parallel runs, sharding, environments, report publishing | ⬜ |
+| 11 | Authentication reuse with `storageState` | ⬜ |
+| 12 | API testing layer | ⬜ |
+
+Details, reasons and lessons for each step: [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md).
+
+---
+
+# 📝 Recent Updates
+
+### 2026-10-29
+- Fixed a race condition on the cart page: tests now wait for the page to load (`waitForURL`) before clicking delete or Proceed To Checkout.
+- Stable empty-cart locator (`#empty_cart p`).
+- Unique sign-up emails with a timestamp.
+- **CI is green again** for the first time since July (25 passed, 1 flaky). Run time dropped from about 8.5 to 2.3 minutes.
+
+### 2026-10-28
+- npm scripts for every common task, documented in `COMMANDS.md`.
+- URL and credentials moved to `.env` (dotenv); `.env.example` template added.
+- CI runs a type check first and takes credentials from GitHub Secrets.
+- Custom fixture `fixtures/baseTest.ts` blocks Google ads that broke tests in CI.
+- `test.slow()` for the 7 tests that run the full sign-up flow.
+
+### 2026-10-27
+- `tsconfig.json` with strict mode and path aliases (`@pages`, `@config`, `@utils`).
 
 ---
 
