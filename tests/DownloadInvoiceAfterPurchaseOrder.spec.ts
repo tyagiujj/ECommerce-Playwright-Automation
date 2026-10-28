@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@fixtures/baseTest';
 
 import { CartAndCheckOutPage } from '@pages/cartAndCheckOutpage';
 import { HomePage } from '@pages/homepage';
@@ -27,6 +27,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Download Invoice After Purchase Order", async ({ page }, testInfo) => {
+    // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
+    test.slow();
     const username = RandomDataUtil.getFullName();
     const emailAddress = RandomDataUtil.getEmail();
 

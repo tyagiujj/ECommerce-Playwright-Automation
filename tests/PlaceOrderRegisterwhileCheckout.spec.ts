@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@fixtures/baseTest';
 
 import { HomePage } from '@pages/homepage';
 import { TestConfig } from '@config/testconfig';
@@ -27,6 +27,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Place Order Register while Checkout", async ({ page }) => {
+    // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
+    test.slow();
     const emailAddress = RandomDataUtil.getEmail();
     const password = 'Password123!';
 

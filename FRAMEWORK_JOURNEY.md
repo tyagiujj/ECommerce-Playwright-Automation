@@ -152,3 +152,73 @@ Start with **Step 1 (Foundation)**, because every later step (fixtures, CI, envi
 ### Next
 - Add the Secrets and the Variable on GitHub (Settings → Secrets and variables → Actions).
 - Commit Parts 2 to 4, push, and check the run in the Actions tab.
+
+---
+
+## Day 2 (continued): 2026-10-28, CI failure analysis
+
+### Result of the first run with secrets (run 40734502066)
+- 19 passed, 3 flaky, 4 failed. `Type check` passed. No `Missing environment variable` error, so Secrets and the Variable work.
+- CI had already been red on every push since 2026-07-26, before any of today's changes.
+
+### Root cause: Google ads on automationexercise.com
+1. **Full-screen "vignette" ads**: clicking a link opens an ad overlay instead of the next page. The test then waits for an element on a page it never reached, until `Test timeout of 30000ms exceeded`. Seen in Login, Place Order Register while Checkout, Download Invoice, Place Order before Checkout, View Category Products, Verify Address Details.
+2. **Injected ad chips**: Google inserts a "Software products" link inside the page text, so `getByText('Cart is empty! Click here to buy products.', { exact: true })` no longer matches (Remove Products From Cart).
+- Different tests fail on each run, because ads appear at random. GitHub runners (US data centre) see more ads than a local machine in India.
+
+### Planned fix
+- Block ad network requests with `context.route(...)` inside a custom fixture (this is Step 2 of the roadmap).
+- Make the empty-cart locator not depend on the full sentence.
+
+### What I learned
+- `gh run view <id> --log` and `gh run download <id>` give the CI log and the HTML report with screenshots.
+- A timeout is often a symptom; the screenshot shows the real cause.
+- Compare with earlier runs before blaming the latest change.
+
+---
+
+## Day 2 (continued): 2026-10-28, Step 2 Part 2.1, ad-blocking fixture
+
+### What changed
+1. New `fixtures/baseTest.ts`: extends Playwright's `test` and overrides the built-in `context` fixture so every request to Google ad servers is aborted (`context.route(AD_HOSTS, route => route.abort())`).
+2. `tsconfig.json`: new alias `@fixtures/*` and `fixtures/**/*.ts` added to `include`.
+3. All 26 tests: line 1 now imports `test, expect` from `@fixtures/baseTest` instead of `@playwright/test`. No other line changed.
+4. Page objects still import `Page` and `Locator` types from `@playwright/test`; that is correct, they are only types.
+
+### Why
+- One file protects all 26 tests (and every future test) from ads.
+- Blocking the ad script removes the cause; clicking an ad's "Close" button would stay flaky because ads appear at random.
+- Overriding `context` instead of `page` also covers new tabs and popups.
+
+### Verification
+- `npm run typecheck` → no errors.
+- Throwaway check: `pagead2.googlesyndication.com` blocked, 0 ad iframes on the home page.
+- The 7 tests that failed or were flaky in CI: 6 passed, 1 flaky (Place Order Register while Checkout).
+- That flaky run had no ad on the page; it hit the 30 s test timeout. The test takes 23–30 s (65 steps, 3 hard waits), right at the limit.
+
+### What I learned
+- A fixture has setup, `await use(value)` (the test runs here), then teardown.
+- `base.extend({...})` adds or overrides fixtures; `{ page }` was a fixture all along.
+- `context.route(pattern, route => route.abort())` cancels matching network requests.
+- After fixing one cause of flakiness, run again: a second, different cause can show up.
+
+---
+
+## Day 2 (continued): 2026-10-28, `test.slow()` for long sign-up flows
+
+### What changed
+- Added `test.slow()` (3x timeout, 30 s → 90 s) as the first line of the 7 tests that run the full sign-up flow:
+  DownloadInvoiceAfterPurchaseOrder, LoginWithCorrectEmailAndPassword, PlaceOrderBeforeRegisterCheckout,
+  PlaceOrderRegisterwhileCheckout, RegisterUser, SearchProductsAndVerifyCartAfterLogin, VerifyAddressDetailsInCheckoutPage.
+
+### Why
+- Chose per-test `test.slow()` over a global 60 s timeout: short tests keep the 30 s limit, so a stuck short test still fails fast.
+- Picked tests by a clear rule (they sign up a new user), not by guessing. Local full run: 26 passed in 4.5 min with no retries; CI is about 2x slower, so 20 s locally is close to 30 s on CI.
+- AddProductsinCart and LogOutUser are slow because of hard waits (5 s, 2 × 2 s). Those get fixed in Step 5, not hidden behind a bigger timeout.
+
+### Verification
+- The 7 tests: 7 passed with `--retries=0`.
+
+### Next
+- Commit, push, and check CI.
+- Part 2.2: page objects as fixtures.

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@fixtures/baseTest';
 import { HomePage } from '@pages/homepage';
 import { RegistrationPage } from '@pages/registrationpage';
 import { TestConfig } from '@config/testconfig';
@@ -18,6 +18,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("Verify the Registration Functionality", async ({ page }) => {
+    // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
+    test.slow();
 
     // Generate random test data
     const username = RandomDataUtil.getFullName();
