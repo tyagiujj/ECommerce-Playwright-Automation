@@ -239,6 +239,8 @@ async ClickSecondProductAddToCartButton(): Promise<void> {
 // Click on View Cart Button
 async ClickOnViewCartButton(): Promise<void>{
     await this.countineshoppingviewCartButton.click();
+    // Wait for the cart page "load" event, so cart.js has attached its click handlers
+    await this.page.waitForURL('**/view_cart');
 }
 async VerifyProductsAddedInCart(): Promise<void> {
 

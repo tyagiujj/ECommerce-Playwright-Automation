@@ -19,7 +19,8 @@ static getFullName()
 
 static getEmail()
 {
-    return faker.internet.email();
+    // Timestamp keeps it unique on this shared public site, so sign-up never hits "Email Address already exist!"
+    return `${faker.internet.username()}.${Date.now()}@example.com`;
 }
 
 static getPhoneNumber()

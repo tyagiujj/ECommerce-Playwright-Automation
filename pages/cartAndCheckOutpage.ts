@@ -65,7 +65,7 @@ export class CartAndCheckOutPage {
        this.removeProductButton = page.locator("a.cart_quantity_delete");
 
         // Cart is Empty Message
-        this.cartIsEmptyMessage = page.getByText('Cart is empty! Click here to buy products.', { exact: true });
+        this.cartIsEmptyMessage = page.locator('#empty_cart p');
         this.cartProducts = page.locator("#cart_info_table tbody tr");
         this.downloadInvoiceButton = page.getByRole('link', { name: 'Download Invoice' });
         this.continueButton = page.getByRole('link', { name: 'Continue' });

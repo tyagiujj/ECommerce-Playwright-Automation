@@ -120,6 +120,8 @@ export class HomePage {
     }
     async ClickOnCartButton(){
         await this.cartButton.click();
+        // Wait for the cart page "load" event, so cart.js has attached its click handlers
+        await this.page.waitForURL('**/view_cart');
     }
 
     async GetRecommendedItemsText(): Promise<Locator> {

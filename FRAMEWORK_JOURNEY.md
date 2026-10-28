@@ -219,6 +219,37 @@ Start with **Step 1 (Foundation)**, because every later step (fixtures, CI, envi
 ### Verification
 - The 7 tests: 7 passed with `--retries=0`.
 
+### CI result after the fixture (run 40743089383)
+- 24 passed, 0 flaky, 2 failed (before: 19 passed, 3 flaky, 4 failed). All ad failures are gone.
+
+---
+
+## Day 3: 2026-10-29, race condition on the cart page, unique emails
+
+### Problem 1: hidden race condition
+- CI trace: the test clicked "Cart" at 5.90 s and the delete (X) button at 6.33 s. The cart page HTML was visible, but `cart.js` (loaded at the end of the page) had not attached its click handlers yet, so the click did nothing. Same for "Proceed To Checkout" (its popup comes from JavaScript).
+- The ads used to slow pages down, which hid this bug. Blocking ads made pages faster and exposed it.
+- **Fix**: `HomePage.ClickOnCartButton()` and `ProductPage.ClickOnViewCartButton()` now call `await this.page.waitForURL('**/view_cart')` after the click. `waitForURL` waits for the URL and, by default, the page `load` event, so all scripts have run. 11 tests use these methods.
+
+### Problem 2: fragile empty-cart locator
+- `getByText('Cart is empty! Click here to buy products.', { exact: true })` broke when an ad chip was injected into the sentence.
+- First attempt `getByText('Cart is empty!')` matched only the `<b>` tag, and the test checks the whole sentence. Lesson: check how a locator is used before changing it.
+- **Fix**: `page.locator('#empty_cart p')`, the paragraph inside the site's own `#empty_cart` container.
+
+### Problem 3: email already exists
+- A full local run failed with "Email Address already exist!": `faker.internet.email()` gave `Emely19@gmail.com`, which someone else had already registered on this shared public site.
+- **Fix**: `RandomDataUtil.getEmail()` returns `<username>.<timestamp>@example.com`, which is unique on every call.
+
+### Verification
+- `npm run typecheck` → no errors.
+- 11 tests that open the cart: passed. RemoveProductsFromCart: 3 of 3 runs passed.
+- 11 tests that sign up a new user: passed.
+
+### What I learned
+- A test that passes only because something else made the page slow is a hidden race condition.
+- Wait for a real condition (`waitForURL`, web-first assertions), never a guessed time.
+- Unique test data matters on shared environments.
+
 ### Next
 - Commit, push, and check CI.
 - Part 2.2: page objects as fixtures.
