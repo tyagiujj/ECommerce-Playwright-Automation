@@ -9,7 +9,7 @@ Each day records **what** changed, **why** it matters in real projects, and **wh
 
 | # | Step | Status |
 |---|------|--------|
-| 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | 🔄 In progress (tsconfig + path aliases done) |
+| 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | 🔄 In progress (tsconfig, aliases, npm scripts, `.env` done; CI left) |
 | 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | ⬜ |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `async` getters for locators | ⬜ |
 | 4 | Reusable business flows (e.g. register user), plus API-based setup for speed | ⬜ |
@@ -74,3 +74,81 @@ Start with **Step 1 (Foundation)**, because every later step (fixtures, CI, envi
 ### Next
 - Part 2: npm scripts in `package.json` (`test`, `test:headed`, `report`, `typecheck`).
 - Part 3: move URL and credentials to `.env`.
+
+---
+
+## Day 2: 2026-10-28, npm scripts
+
+### What changed
+1. Added npm scripts to `package.json`: `test`, `test:headed`, `test:ui`, `test:debug`, `test:list`, `report`, `typecheck`.
+2. Added `COMMANDS.md`, a cheat sheet that explains every command, why it exists, and when to use it.
+
+### Why
+- `npm test` is the standard entry point of every Node project; anyone who clones the repo can run it without reading docs.
+- Each command is defined in one place, so local runs and CI use the same command.
+
+### Verification
+- `npm run test:list` → 26 tests found.
+- `npm test -- tests/SearchProduct.spec.ts` → passed.
+
+### What I learned
+- A script is `"name": "command"`; `npm test` works directly, every other script needs `npm run <name>`.
+- Extra arguments go after `--` (`npm test -- -g "Login"`), so npm passes them on to Playwright.
+- `tsc --noEmit` only checks types and writes no `.js` files.
+
+---
+
+## Day 2 (continued): 2026-10-28, `.env` with dotenv
+
+### What changed
+1. Installed `dotenv` as a dev dependency.
+2. `.env` (local only, git-ignored) holds `BASE_URL`, `USER_EMAIL`, `USER_PASSWORD`.
+3. `.env.example` (committed) is a template with fake values, so teammates know which variables they need.
+4. `.gitignore` now ignores `.env`.
+5. `playwright.config.ts` loads the file with `dotenv.config({ quiet: true })`.
+6. `tsconfig.json` got `"types": ["node"]`, because TypeScript 7 no longer loads Node types by default (`Cannot find name 'process'`).
+7. `config/testconfig.ts` reads values from `process.env` through a `requireEnv()` helper. Login and test-cases URLs are built from `BASE_URL` with `new URL()`.
+8. No test file changed: the `TestConfig` property names stayed the same (encapsulation).
+
+### Why
+- No passwords in code or on GitHub.
+- Switching environments (QA / Staging / Prod) means changing one value, not code.
+- `requireEnv()` fails fast with a clear message instead of typing `undefined` into a field.
+
+### Verification
+- `npm run typecheck` → no errors.
+- `LoginWithCorrectEmailAndPassword`, `ContactUsForm`, `LogOutUser` → passed (login test failed once because the site returned a Cloudflare 520 error, then passed on retry).
+- With `.env` removed: `Error: Missing environment variable "BASE_URL"`.
+- `git status` does not show `.env`.
+
+### What I learned
+- `process.env` holds environment variables; `dotenv` copies `.env` lines into it.
+- Config belongs outside code (12-Factor App principle).
+- `.gitignore` protects only future commits; a secret already pushed must be rotated.
+- Derive values (login URL) from one source (`BASE_URL`) instead of duplicating them.
+
+---
+
+## Day 2 (continued): 2026-10-28, CI uses npm scripts and GitHub Secrets
+
+### What changed
+1. `.github/workflows/playwright.yml`: added a `Type check` step (`npm run typecheck`) before the tests.
+2. Tests now run with `npm test` instead of `npx playwright test`.
+3. The test step gets `BASE_URL` from a GitHub Variable and `USER_EMAIL` / `USER_PASSWORD` from GitHub Secrets through an `env:` block.
+
+### Why
+- `.env` is git-ignored, so CI needs the values from somewhere else; Secrets are encrypted and masked as `***` in logs.
+- `BASE_URL` is a Variable, not a Secret, because it is not sensitive and should stay readable in logs.
+- The `env:` block gives the values only to the test step (least privilege).
+- Type check first fails the run in seconds when the code has a type error (fail fast).
+
+### What I learned
+- CI runs the tests on a fresh machine on every push and pull request.
+- `npm ci` installs the exact versions from `package-lock.json`.
+- `${{ secrets.NAME }}` for secrets, `${{ vars.NAME }}` for variables.
+- Add the secrets on GitHub before pushing the workflow, or the run fails with an empty locker.
+- YAML uses spaces only; indentation decides the structure.
+
+### Next
+- Add the Secrets and the Variable on GitHub (Settings → Secrets and variables → Actions).
+- Commit Parts 2 to 4, push, and check the run in the Actions tab.
