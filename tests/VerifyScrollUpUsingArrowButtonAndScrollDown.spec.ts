@@ -1,19 +1,16 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
 import { TestConfig } from '@config/testconfig';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
 
 test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
     testConfig = new TestConfig();
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify Scroll Up Using Arrow Button And Scroll Down", async ({ page }) => {
+test("Verify Scroll Up Using Arrow Button And Scroll Down", async ({ page, homePage }) => {
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();
 
     await homePage.ScrollToBottom();

@@ -1,88 +1,135 @@
 # Commands Cheat Sheet
 
-Is project ko chalane ki saari commands, aur har command kyu aur kab use hoti hai.
-Saare scripts `package.json` ke `"scripts"` section me defined hain.
+Every command used in this project: what it does, why, and when to use it.
+All npm scripts are defined in the `"scripts"` section of `package.json`.
 
 ---
 
-## Script ka structure
+## Structure of a script
 
 ```json
 "test:headed": "playwright test --headed"
-   ↑ naam (key)          ↑ asli command (value)
+   ↑ name (key)         ↑ real command (value)
 ```
 
-- **Key:** wo naam jo terminal me likhte ho (`npm run test:headed`).
-- **Value:** wo command jo npm tumhare liye chalata hai.
-- npm commands ko `node_modules/.bin` me dhoondhta hai, isliye `npx` nahi lagana padta.
-- `:` (colon) sirf naming convention hai, taki related scripts ek group me dikhein.
+- **Key:** the name you type in the terminal (`npm run test:headed`).
+- **Value:** the command npm runs for you.
+- npm looks for commands in `node_modules/.bin`, so you do not need `npx`.
+- The `:` (colon) is only a naming convention that groups related scripts.
 
-### Yaad rakhne ke 3 rules
-1. `test` script: `npm test` (shortcut, `run` nahi lagta).
-2. Baaki saare scripts: `npm run <naam>`.
-3. Extra arguments (file ka naam, `-g`, etc.) `--` ke **baad** aate hain. `--` npm ko batata hai ki aage wale arguments Playwright ko de do.
+### 3 rules to remember
+1. The `test` script: `npm test` (a built-in shortcut, no `run` needed).
+2. Every other script: `npm run <name>`.
+3. Extra arguments (a file name, `-g`, ...) go **after** `--`. `--` tells npm to pass everything after it to Playwright.
 
 ---
 
-## Saare scripts
+## All scripts
 
-| Script | Command | Ek line me |
+| Script | Command | In one line |
 |---|---|---|
-| `npm test` | `playwright test` | Saare tests chalao, browser nahi dikhega |
-| `npm run test:headed` | `playwright test --headed` | Tests chalao, browser dikhega |
-| `npm run test:ui` | `playwright test --ui` | Visual UI window me tests chalao |
-| `npm run test:debug` | `playwright test --debug` | Inspector me line-by-line chalao |
-| `npm run test:list` | `playwright test --list` | Sirf list dikhao, chalao mat |
-| `npm run report` | `playwright show-report` | Last HTML report kholo |
-| `npm run typecheck` | `tsc --noEmit` | Bina browser ke code errors check karo |
+| `npm test` | `playwright test` | Run all tests, no visible browser |
+| `npm run test:headed` | `playwright test --headed` | Run tests with the browser visible |
+| `npm run test:ui` | `playwright test --ui` | Run tests in the visual UI window |
+| `npm run test:debug` | `playwright test --debug` | Step through a test line by line in the Inspector |
+| `npm run test:list` | `playwright test --list` | Only list tests, do not run them |
+| `npm run report` | `playwright show-report` | Open the last HTML report |
+| `npm run typecheck` | `tsc --noEmit` | Check code errors without a browser |
 
 ---
 
-## Detail me
+## In detail
 
 ### `npm test`
-- `playwright.config.ts` padhta hai, `testDir: './tests'` ke andar saari `.spec.ts` files chalata hai.
-- Default me **headless** (browser screen pe nahi dikhta), isliye fast hai.
-- **Kab:** saare tests chalane ke liye, aur CI me.
+- Reads `playwright.config.ts` and runs every `.spec.ts` file inside `testDir: './tests'`.
+- **Headless** by default (the browser is not shown), so it is fast.
+- **When:** to run all tests, and in CI.
 
 ### `npm run test:headed`
-- `--headed` = browser screen pe dikhega. Thoda slow hai.
-- **Kab:** test fail ho aur dekhna ho ki test kya click kar raha hai.
+- `--headed` = the browser is shown on screen. A bit slower.
+- **When:** a test fails and you want to see what it clicks.
 
 ### `npm run test:ui`
-- `--ui` = Playwright **UI Mode** (alag window): tests ki list, har step ka timeline, DOM snapshot, network calls, watch mode.
-- **Kab:** naya test likhte waqt ya debugging me. Daily kaam ke liye sabse useful.
+- `--ui` = Playwright **UI Mode** (a separate window): test list, timeline of every step, DOM snapshots, network calls, watch mode.
+- **When:** writing a new test or debugging. The most useful mode for daily work.
 
 ### `npm run test:debug`
-- `--debug` = **Playwright Inspector** khulta hai, test pehli line pe ruk jata hai. Timeout apne aap band ho jata hai.
-- **Kab:** koi locator kaam nahi kar raha aur exact line pe rukna ho.
+- `--debug` = opens the **Playwright Inspector** and pauses on the first line. Timeouts are turned off automatically.
+- **When:** a locator does not work and you need to stop on the exact line.
 
 ### `npm run test:list`
-- `--list` = tests chalata nahi, sirf list dikhata hai.
-- **Kab:** check karna ho ki files load ho rahi hain, imports toote to nahi, ya `-g` filter sahi tests pakad raha hai.
+- `--list` = does not run tests, only lists them.
+- **When:** to check that files load, imports are not broken, or that a `-g` filter picks the right tests.
 
 ### `npm run report`
-- Last run ki HTML report kholta hai (`playwright-report/` folder se): pass/fail, error, screenshot, video, trace.
-- **Kab:** test run ke baad, khaaskar jab koi test fail ho.
+- Opens the last run's HTML report (from the `playwright-report/` folder): pass/fail, errors, screenshots, videos, traces.
+- **When:** after a test run, especially when a test failed.
 
 ### `npm run typecheck`
-- `tsc` = TypeScript compiler. `--noEmit` = sirf errors check karo, `.js` files mat banao (Playwright khud TypeScript chala leta hai).
-- `tsconfig.json` padhta hai (strict mode, path aliases). 2-3 second me galat import, galat method name ya type mistake pakad leta hai.
-- **Kab:** commit karne se pehle, hamesha.
+- `tsc` = the TypeScript compiler. `--noEmit` = only check for errors, do not create `.js` files (Playwright runs TypeScript itself).
+- Reads `tsconfig.json` (strict mode, path aliases). In 2-3 seconds it finds wrong imports, wrong method names, wrong fixture names and type mistakes.
+- **When:** before every commit, always.
 
 ---
 
-## Roz kaam aane wale examples
+## Everyday examples
 
 ```
-npm test                                           # saare tests
-npm test -- tests/SearchProduct.spec.ts            # ek file
-npm test -- -g "Search Product"                    # naam se filter (-g = grep)
-npm run test:headed -- tests/SearchProduct.spec.ts # ek file, browser dikhega
-npm run test:debug -- tests/SearchProduct.spec.ts  # ek file, line-by-line
-npm run test:list -- -g "Login"                    # check karo filter kaun se tests pakadta hai
-npm run typecheck                                  # commit se pehle
-npm run report                                     # run ke baad report
+npm test                                           # all tests
+npm test -- tests/SearchProduct.spec.ts            # one file
+npm test -- -g "Search Product"                    # filter by test name (-g = grep)
+npm test -- --retries=0                            # no retries: see real failures, nothing hidden as flaky
+npm run test:headed -- tests/SearchProduct.spec.ts # one file, browser visible
+npm run test:debug -- tests/SearchProduct.spec.ts  # one file, line by line
+npm run test:list -- -g "Login"                    # check which tests a filter picks
+npm run typecheck                                  # before committing
+npm run report                                     # after a run
+```
+
+---
+
+## Git: daily feature branch workflow
+
+Every session starts on a new branch. Work never goes straight to `main`.
+
+### Start of the day
+```
+git status                                  # main must be clean (nothing uncommitted)
+git switch main                             # go to main if you are on another branch
+git pull origin main                        # get the latest main from GitHub
+git switch -c feature/<topic>               # create a new branch and switch to it
+git branch                                  # * marks the current branch
+```
+`git checkout -b feature/<topic>` is the older command that does the same as `git switch -c`.
+
+### Branch names
+| Prefix | When | Example |
+|--------|------|---------|
+| `feature/` | New work or an improvement | `feature/page-object-fixtures` |
+| `fix/` | A bug fix | `fix/scroll-up-flaky-test` |
+| `chore/` | Config, dependencies, docs | `chore/update-readme` |
+
+Lowercase, words joined by `-`, and the name says what the branch is for.
+
+### During the day
+```
+git status                                  # what changed
+git diff                                    # see the exact changes
+git diff --stat                             # changed files and line counts
+git add <file>                              # stage a file
+git add .                                   # stage everything
+git commit -m "Short message saying what and why"
+```
+
+### End of the day
+```
+git push -u origin feature/<topic>          # first push of the branch (-u links it to GitHub)
+git push                                    # later pushes
+gh pr create                                # open a Pull Request to main
+gh pr checks                                # CI status of the PR
+gh pr merge                                 # merge after review and green CI
+git switch main && git pull origin main     # come back to the updated main
+git branch -d feature/<topic>               # delete the merged local branch
 ```
 
 ---
@@ -104,8 +151,14 @@ gh variable list                                # repo variables with their valu
 
 ---
 
-## Interview tip
+## Interview tips
 
-**Q:** `npx playwright test` aur `npm test` me kya fark hai?
+**Q:** What is the difference between `npx playwright test` and `npm test`?
 
-**A:** Result same hai, par `npm test` project ka standard entry point hai. Command `package.json` me ek jagah define hai, aur CI aur local dono same command use karte hain. Flag badalna ho to sirf ek jagah badlega.
+**A:** The result is the same, but `npm test` is the project's standard entry point. The command is defined once in `package.json`, and CI and every developer use the same command. To change a flag, you change it in one place.
+
+**Q:** `git switch -c` vs `git checkout -b`?
+
+**A:** Same result: create a branch and switch to it. `switch` is the newer command made only for branches; `checkout` does many different things (branches, files, commits), so `switch` is clearer.
+
+More questions and answers for every concept: [INTERVIEW_PREP.md](INTERVIEW_PREP.md).

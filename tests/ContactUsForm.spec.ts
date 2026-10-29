@@ -1,23 +1,17 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
-import { ContactUsPage } from '@pages/contactUsformpage';
 import { TestConfig } from '@config/testconfig';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let contactUsPage: ContactUsPage;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    contactUsPage = new ContactUsPage(page);
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify the functionality of contact Us Form", async ({ page }) => {
+test("Verify the functionality of contact Us Form", async ({ page, homePage, contactUsPage }) => {
 
     // Verify home page is visible
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();

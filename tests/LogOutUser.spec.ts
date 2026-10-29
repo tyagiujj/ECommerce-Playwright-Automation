@@ -1,23 +1,17 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
-import { LoginPage } from '@pages/loginpage';
 import { TestConfig } from '@config/testconfig';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let loginPage: LoginPage;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    loginPage = new LoginPage(page);
 
     // Launch the application
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify the logout functionality", async ({ page }) => {
+test("Verify the logout functionality", async ({ page, homePage, loginPage }) => {
 
     // 1. Verify that home page is visible successfully
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();

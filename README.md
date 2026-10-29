@@ -4,9 +4,9 @@
 
 A UI automation framework built with **Playwright**, **TypeScript** and the **Page Object Model (POM)** for the public e-commerce application **Automation Exercise**.
 
-The framework is being hardened step by step towards industry standards: environment-based configuration, custom fixtures, CI with GitHub Secrets, and stable, non-flaky tests. Every change is logged with its reason in [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md).
+The framework is being hardened step by step towards industry standards: environment-based configuration, custom fixtures, CI with GitHub Secrets, and stable, non-flaky tests. Every change is logged with its reason in [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md), and every concept is explained with interview questions in [INTERVIEW_PREP.md](INTERVIEW_PREP.md).
 
-> **Last updated:** 2026-10-29 · **CI status:** ✅ green (25 passed, 1 flaky, 0 failed)
+> **Last updated:** 2026-10-29 · **CI status (main):** ✅ green (25 passed, 1 flaky, 0 failed) · **Local, branch `feature/page-object-fixtures`:** 26 passed, 0 retries
 
 ---
 
@@ -40,7 +40,7 @@ A public e-commerce application widely used to practise manual and automation te
 | Playwright Test | Test runner and browser automation |
 | TypeScript (strict mode) | Programming language and type checking |
 | Page Object Model | Design pattern |
-| Custom fixtures | Shared test setup (ad blocking) |
+| Custom fixtures | Shared test setup: ad blocking and page objects injected into tests |
 | dotenv | Environment variables from `.env` |
 | Faker | Dynamic test data |
 | GitHub Actions | CI/CD |
@@ -62,7 +62,7 @@ AutomationExerciseProject
 │   └── rondomDataGenerator.ts  # Faker-based test data (unique emails)
 │
 ├── fixtures/
-│   └── baseTest.ts             # Custom test: blocks Google ad requests for every test
+│   └── baseTest.ts             # Custom test: blocks Google ads, creates every page object
 │
 ├── pages/                      # Page objects
 │   ├── homepage.ts
@@ -86,6 +86,7 @@ AutomationExerciseProject
 ├── package.json                # npm scripts
 ├── COMMANDS.md                 # Every command explained: what, why, when
 ├── FRAMEWORK_JOURNEY.md        # Daily log of framework improvements
+├── INTERVIEW_PREP.md           # Every concept explained, with interview Q&A
 └── README.md
 ```
 
@@ -145,7 +146,21 @@ See [COMMANDS.md](COMMANDS.md) for every command with an explanation.
 Each page class holds its locators and actions, so tests read like business steps and a locator change is fixed in one place.
 
 ### Custom fixtures
-All tests import `test` and `expect` from `@fixtures/baseTest` instead of `@playwright/test`. The fixture overrides the browser `context` and aborts requests to Google ad servers. The site's full-screen ads and injected ad links used to block clicks and change page text, which made CI fail at random.
+All tests import `test` and `expect` from `@fixtures/baseTest` instead of `@playwright/test`. The file does two things:
+
+- **Ad blocking:** it overrides the browser `context` and aborts requests to Google ad servers. The site's full-screen ads and injected ad links used to block clicks and change page text, which made CI fail at random.
+- **Page objects as fixtures:** it creates every page object (`homePage`, `loginPage`, `cartPage`, ...), typed with a `PageFixtures` type. A test asks for what it needs in its signature, and Playwright creates a fresh object for that test:
+
+```ts
+import { test, expect } from '@fixtures/baseTest';
+
+test('Login user', async ({ page, homePage, loginPage }) => {
+    await homePage.clickOnSignupLoginButton();
+    // ...
+});
+```
+
+No test declares `let` variables or creates page objects in `beforeEach`; `new HomePage(page)` exists in one place only.
 
 ### Environment-based configuration
 `config/testconfig.ts` reads values from `process.env` through `requireEnv()`. Locally they come from `.env` (loaded by `dotenv` in `playwright.config.ts`); in CI they come from GitHub Secrets and Variables. Login and test-case URLs are built from `BASE_URL`, so switching environments means changing one value.
@@ -224,7 +239,7 @@ To run CI in your own fork, add under **Settings → Secrets and variables → A
 | # | Step | Status |
 |---|------|--------|
 | 1 | Foundation: `tsconfig.json`, path aliases, npm scripts, `.env`, CI with GitHub Secrets | ✅ Done |
-| 2 | Custom fixtures: ad blocking, then page objects injected into tests | 🔄 In progress |
+| 2 | Custom fixtures: ad blocking ✅, page objects injected into tests ✅, config / `baseURL` next | 🔄 In progress |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `force: true` | ⬜ |
 | 4 | Reusable business flows (register user) and API-based setup | ⬜ |
 | 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
@@ -242,7 +257,13 @@ Details, reasons and lessons for each step: [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOU
 
 # 📝 Recent Updates
 
-### 2026-10-29
+### 2026-10-29 (Day 4)
+- Work now happens on feature branches and reaches `main` through Pull Requests (first branch: `feature/page-object-fixtures`).
+- Page objects are custom fixtures in `fixtures/baseTest.ts`. All 26 tests ask for them in their signature; the repeated imports, `let` variables and `beforeEach` object creation are gone (about 160 fewer lines, 26 of 26 tests pass with no retries).
+- New `INTERVIEW_PREP.md`: every concept used so far, explained with interview questions and answers.
+- `COMMANDS.md` rewritten in English, with a new Git feature branch section.
+
+### 2026-10-29 (Day 3)
 - Fixed a race condition on the cart page: tests now wait for the page to load (`waitForURL`) before clicking delete or Proceed To Checkout.
 - Stable empty-cart locator (`#empty_cart p`).
 - Unique sign-up emails with a timestamp.

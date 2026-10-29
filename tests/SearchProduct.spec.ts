@@ -1,22 +1,16 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
 import { TestConfig } from '@config/testconfig';
-import { ProductPage } from '@pages/productpage';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let productPage: ProductPage;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    productPage = new ProductPage(page);
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify Search Product", async ({ page }) => {
+test("Verify Search Product", async ({ page, homePage, productPage }) => {
 
     // Verify home page is visible
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();

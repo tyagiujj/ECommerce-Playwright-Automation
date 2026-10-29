@@ -10,7 +10,7 @@ Each day records **what** changed, **why** it matters in real projects, and **wh
 | # | Step | Status |
 |---|------|--------|
 | 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | ✅ Done (tsconfig, aliases, npm scripts, `.env`, CI with GitHub Secrets) |
-| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | 🔄 In progress (ad-blocking fixture done; page objects next) |
+| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | 🔄 In progress (ad-blocking fixture ✅, page-object fixtures ✅; `TestConfig` / `baseURL` next) |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `async` getters for locators | ⬜ |
 | 4 | Reusable business flows (e.g. register user), plus API-based setup for speed | ⬜ |
 | 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
@@ -290,3 +290,164 @@ Start with **Step 1 (Foundation)**, because every later step (fixtures, CI, envi
 
 ### Next
 - Part 2.2: page objects as fixtures (remove `let` variables and `beforeEach` from the 26 tests).
+
+---
+
+## Day 4: 2026-10-29, feature branch workflow + page objects as fixtures (Step 2, Part 2.2)
+
+### Part 1: work on a feature branch, not on `main`
+
+**What changed**
+- From today, every session starts on a new branch. Today's branch: `feature/page-object-fixtures`.
+  ```bash
+  git status                                  # main must be clean
+  git pull origin main                        # get the latest main
+  git switch -c feature/page-object-fixtures  # create the branch and switch to it
+  git branch                                  # * marks the current branch
+  ```
+- The work is merged into `main` through a Pull Request after review and a green CI run.
+
+**Concept: feature branch workflow**
+- `main` is always stable. All work happens on short-lived branches cut from `main`.
+- A Pull Request (PR) is where code is reviewed and CI runs before the change reaches `main`.
+- One branch = one piece of work. Several people can work at the same time without overwriting each other.
+- Naming convention: `feature/...` (new work), `fix/...` (bug fix), `chore/...` (config, docs, dependencies). Lowercase words joined by `-`.
+- Many companies turn on *branch protection*: direct pushes to `main` are blocked, and a merge needs a PR with approvals and green checks.
+
+**Why**
+- Until now every commit went straight to `main`. If a change broke something, `main` broke for everyone.
+- Our CI (`playwright.yml`) runs on `push` to `main` and on `pull_request` to `main`. A PR gives us a CI run **before** merging.
+
+### Part 2: page objects as fixtures
+
+**Problem (before)**
+
+Every one of the 26 test files repeated the same setup:
+```ts
+import { HomePage } from '@pages/homepage';
+import { LoginPage } from '@pages/loginpage';
+
+let homePage: HomePage;
+let loginPage: LoginPage;
+
+test.beforeEach(async ({ page }) => {
+    homePage = new HomePage(page);
+    loginPage = new LoginPage(page);
+});
+
+test('login', async ({ page }) => { ... });
+```
+
+| Class | Files that created it with `new ...(page)` |
+|-------|------|
+| HomePage | 26 |
+| ProductPage | 15 |
+| LoginPage | 10 |
+| RegistrationPage | 10 |
+| CartAndCheckOutPage | 6 |
+| CategoryPage, CommonActions | 2 each |
+| ContactUsPage, TestCasesPage | 1 each |
+
+Problems with this:
+1. **Copy-paste (not DRY).** A constructor change means editing 26 files.
+2. **`let` turns off TypeScript's safety.** If a file forgets `loginPage = new LoginPage(page)`, TypeScript says nothing; the test fails at run time with `Cannot read properties of undefined`.
+3. **Unused objects.** Objects were created even when a test did not use them.
+4. **Hidden dependencies.** The test signature said `({ page })`, but the body used `homePage`, `loginPage`... from file-level variables.
+
+**What changed**
+- `fixtures/baseTest.ts`
+  - Imports the 8 page classes (`@pages/...`) and `CommonActions` (`@utils/commonActions`).
+  - New type `PageFixtures` lists the 9 fixture names and their types (`homePage: HomePage`, `cartPage: CartAndCheckOutPage`, ...).
+  - `base.extend({ ... })` became `base.extend<PageFixtures>({ ... })`.
+  - One fixture per class, below the existing `context` (ad-blocking) fixture:
+    ```ts
+    homePage: async ({ page }, use) => {
+      await use(new HomePage(page));
+    },
+    ```
+  - Fixture names are the names the tests already used in `let`, so no line inside a test body changed.
+- All 26 test files
+  - Removed: page-class imports, `let` page variables, and the `new ...(page)` lines in `beforeEach`.
+  - The test signature now asks for what it needs: `async ({ page, homePage, loginPage, registerPage }) => { ... }`.
+  - Not changed (on purpose): `TestConfig`, `RandomDataUtil`, `page.goto(...)`, and every line inside the test bodies.
+- Who did what: I migrated `LoginWithCorrectEmailAndPassword.spec.ts` and `VerifyTestCasesPage.spec.ts` by hand. The other 24 files were migrated with a small Node.js script (a *codemod*) that applies exactly the same 4 steps to every file.
+
+**After**
+```ts
+import { test, expect } from '@fixtures/baseTest';
+
+test('login', async ({ page, homePage, loginPage }) => {
+    await homePage.clickOnSignupLoginButton();   // same line as before
+});
+```
+
+### Concepts I learned today
+
+**Class, object, constructor**
+- A **class** (`HomePage` in `pages/homepage.ts`) is a blueprint: which locators and methods exist.
+- `new HomePage(page)` creates an **object** (instance) from the blueprint.
+- `new` runs the **constructor**. Our constructor stores `page` (`this.page = page`) and builds every locator for that page (`page.getByRole(...)`).
+- `page` is the browser tab of the current test. The object needs it so its locators look in the right tab.
+
+**Every test gets a new object, before and after**
+- `beforeEach` runs before every test, so the old code also created new objects for every test.
+- Fixtures do the same. What changed is **who** creates the object and **where** that code is written: once, in `fixtures/baseTest.ts`, instead of in 26 files.
+- An object cannot be shared between tests: each test has its own new `page`, and the previous test's page is already closed. Sharing would also break **test isolation**.
+- "One recipe, a fresh cup of tea every time."
+
+**Class vs fixture name vs variable**
+
+| Name | What it is |
+|------|------------|
+| `HomePage` (capital H) | The class (blueprint), in `pages/homepage.ts` |
+| `new HomePage(page)` | The object, created inside the fixture |
+| `homePage` in `baseTest.ts` | The fixture name: the name a test uses to ask for the object |
+| `homePage` inside a test | A variable holding the object Playwright passed in |
+
+The name in the test's `{ }` must match the fixture name exactly (`homepage` ≠ `homePage`), because Playwright finds fixtures by name.
+
+**How Playwright runs a test with fixtures**
+```
+1. Reads the signature: async ({ page, homePage })
+2. Needs homePage → finds its fixture in baseTest.ts
+3. That fixture needs page → page needs context → our context fixture blocks ads
+4. new HomePage(page) → use(object) → the test runs
+5. Test ends → page closes → the object is gone
+6. Next test → everything again, with a new page and new objects
+```
+
+**Why fixtures are better**
+1. **One place** creates objects. Change a constructor → change one line.
+2. **Lazy**: a fixture is created only if a test asks for it.
+3. **Type-safe**: `<PageFixtures>` makes TypeScript check fixture names and types (autocomplete; a typo is a compile error). It also errors if a fixture listed in the type is not implemented.
+4. **Readable**: the signature shows exactly what a test depends on.
+5. **Fixture chaining**: page objects use `page`, which uses our ad-blocking `context`, so every page object runs with ads blocked automatically.
+
+**Backward-compatible change**
+- After `baseTest.ts` was updated, the old tests still passed, because they did not ask for the new fixtures. This let us migrate one file at a time.
+
+**Refactoring in small steps**
+- Prove the pattern on one file, verify, then scale to all files. For many identical edits, use a script (codemod) so every file gets exactly the same change.
+
+**Separation of concerns**
+```
+pages/     → classes: locators + actions          (blueprint)
+fixtures/  → creates objects and hands them out   (factory)
+tests/     → asks for objects and uses them       (user)
+```
+
+### Verification
+- `npm run typecheck` → no errors.
+- Search over `tests/`: no `new ...Page(page)` and no `@pages/` import left. The 9 `new ...(page)` calls now exist only in `fixtures/baseTest.ts`.
+- Full suite with `--retries=0`: **26 passed (4.4 min)**.
+- Size: 27 files changed, 246 lines removed, 85 added (about 160 fewer lines, same behaviour).
+
+### What I learned
+- A fixture is dependency injection for tests: the test declares what it needs, and the framework provides it.
+- Object creation code lives in one place; every test still gets a fresh object.
+- Static utility classes (`RandomDataUtil`) do not need fixtures, because they are never created with `new`.
+
+### Next
+- `TestConfig` is still created in all 26 `beforeEach` blocks, and every file repeats `page.goto(testConfig.appUrl)`. Next part: `baseURL` in `playwright.config.ts` and `page.goto('/')`.
+- Commit, push and open the first Pull Request from this branch.
+- Interview notes for every concept so far: [INTERVIEW_PREP.md](INTERVIEW_PREP.md).

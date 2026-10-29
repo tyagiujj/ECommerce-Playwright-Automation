@@ -1,21 +1,15 @@
 import { test, expect } from '@fixtures/baseTest';
-import { HomePage } from '@pages/homepage';
 import { TestConfig } from '@config/testconfig';
-import { CommonActions } from '@utils/commonActions';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let commonActions: CommonActions;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    commonActions = new CommonActions(page);
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify Subscription in Cart page", async ({ page }) => {
+test("Verify Subscription in Cart page", async ({ page, homePage, commonActions }) => {
 
     // Verify home page is visible
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();

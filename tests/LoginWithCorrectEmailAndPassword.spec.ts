@@ -1,24 +1,19 @@
 import{test,expect} from '@fixtures/baseTest';
-import { HomePage } from '@pages/homepage';
+
 import { TestConfig } from '@config/testconfig'
-import { LoginPage } from '@pages/loginpage';
-import { RegistrationPage } from '@pages/registrationpage';
+
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let homePage : HomePage;
+
 let testConfig : TestConfig;
-let loginPage : LoginPage;
-let registerPage : RegistrationPage;
 
 test.beforeEach(async ({page})=>{
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    loginPage = new LoginPage(page);
-    registerPage = new RegistrationPage(page);
+  
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify the login functionality with correct email and password", async({page})=>{
+test("Verify the login functionality with correct email and password", async({page,homePage,loginPage,registerPage})=>{
     // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
     test.slow();
     const emailAddress = RandomDataUtil.getEmail();

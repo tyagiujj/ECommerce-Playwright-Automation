@@ -1,32 +1,17 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
 import { TestConfig } from '@config/testconfig';
-import { ProductPage } from '@pages/productpage';
-import { CartAndCheckOutPage } from '@pages/cartAndCheckOutpage';
-import { LoginPage } from '@pages/loginpage';
-import { RegistrationPage } from '@pages/registrationpage';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let productPage: ProductPage;
-let cartPage: CartAndCheckOutPage;
-let loginPage: LoginPage;
-let registerPage: RegistrationPage;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    productPage = new ProductPage(page);
-    cartPage = new CartAndCheckOutPage(page);
-    loginPage = new LoginPage(page);
-    registerPage = new RegistrationPage(page);
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Place Order Register before Checkout", async ({ page }) => {
+test("Place Order Register before Checkout", async ({ page, homePage, productPage, cartPage, loginPage, registerPage }) => {
     // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
     test.slow();
     const username = RandomDataUtil.getFullName();

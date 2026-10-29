@@ -1,22 +1,16 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
-import { ProductPage } from '@pages/productpage';
 import { TestConfig } from '@config/testconfig';
 
-let homePage: HomePage;
-let productPage: ProductPage;
 let testConfig: TestConfig;
 
 test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
-    productPage = new ProductPage(page);
     testConfig = new TestConfig();
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Add To Cart From Recommended Items", async ({ page }) => {
+test("Add To Cart From Recommended Items", async ({ page, homePage, productPage }) => {
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();
 
     await homePage.ScrollToBottom();

@@ -1,23 +1,17 @@
 import { test, expect } from '@fixtures/baseTest';
-import { HomePage } from '@pages/homepage';
-import { RegistrationPage } from '@pages/registrationpage';
 import { TestConfig } from '@config/testconfig';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let homePage: HomePage;
 let testConfig: TestConfig;
-let registerPage: RegistrationPage;
 
 test.beforeEach(async ({ page }) => {
     testConfig = new TestConfig();
-    homePage = new HomePage(page);
-    registerPage = new RegistrationPage(page);
 
     // Launch the application
     await page.goto(testConfig.appUrl);
 });
 
-test("Verify the Registration Functionality", async ({ page }) => {
+test("Verify the Registration Functionality", async ({ page, homePage, registerPage }) => {
     // Long end-to-end flow (sign-up + several pages): give it 3x the default timeout.
     test.slow();
 

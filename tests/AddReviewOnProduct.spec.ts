@@ -1,23 +1,17 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { HomePage } from '@pages/homepage';
-import { ProductPage } from '@pages/productpage';
 import { TestConfig } from '@config/testconfig';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let homePage: HomePage;
-let productPage: ProductPage;
 let testConfig: TestConfig;
 
 test.beforeEach(async ({ page }) => {
-    homePage = new HomePage(page);
-    productPage = new ProductPage(page);
     testConfig = new TestConfig();
 
     await page.goto(testConfig.appUrl);
 });
 
-test("Add Review On Product", async ({ page }) => {
+test("Add Review On Product", async ({ page, homePage, productPage }) => {
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();
 
     await homePage.ClickOnProductButton();
