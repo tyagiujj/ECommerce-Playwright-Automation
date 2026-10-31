@@ -1,17 +1,12 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { TestConfig } from '@config/testconfig';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let testConfig: TestConfig;
-
 test.beforeEach(async ({ page }) => {
-    testConfig = new TestConfig();
-
-    await page.goto(testConfig.appUrl);
+    await page.goto('/');
 });
 
-test("Place Order Login before Checkout", async ({ page, homePage, productPage, cartPage, loginPage, registerPage }) => {
+test("Place Order Login before Checkout", async ({ page, homePage, productPage, cartPage, loginPage, registerPage, testConfig }) => {
     const username = RandomDataUtil.getFullName();
     const emailAddress = RandomDataUtil.getEmail();
     const password = 'Password123!';

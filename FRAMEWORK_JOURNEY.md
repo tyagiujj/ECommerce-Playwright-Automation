@@ -10,7 +10,7 @@ Each day records **what** changed, **why** it matters in real projects, and **wh
 | # | Step | Status |
 |---|------|--------|
 | 1 | Foundation: environment config (`.env`), no hard-coded secrets, npm scripts, `tsconfig.json` | ✅ Done (tsconfig, aliases, npm scripts, `.env`, CI with GitHub Secrets) |
-| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | 🔄 In progress (ad-blocking fixture ✅, page-object fixtures ✅; `TestConfig` / `baseURL` next) |
+| 2 | Custom fixtures: inject page objects into tests (remove repeated `beforeEach` setup) | ✅ Done (ad-blocking fixture, page-object fixtures, `testConfig` fixture, `baseURL`) |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `async` getters for locators | ⬜ |
 | 4 | Reusable business flows (e.g. register user), plus API-based setup for speed | ⬜ |
 | 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
@@ -447,7 +447,122 @@ tests/     → asks for objects and uses them       (user)
 - Object creation code lives in one place; every test still gets a fresh object.
 - Static utility classes (`RandomDataUtil`) do not need fixtures, because they are never created with `new`.
 
+### CI result (run 40921082653, commit 033246e)
+- ✅ **Green: 26 passed, 0 flaky, 0 failed, in 2.1 min.** The first fully clean CI run (VerifyScrollUpUsingArrowButton was not flaky this time).
+- Merged locally with a fast-forward merge (no PR this time).
+
 ### Next
 - `TestConfig` is still created in all 26 `beforeEach` blocks, and every file repeats `page.goto(testConfig.appUrl)`. Next part: `baseURL` in `playwright.config.ts` and `page.goto('/')`.
 - Commit, push and open the first Pull Request from this branch.
 - Interview notes for every concept so far: [INTERVIEW_PREP.md](INTERVIEW_PREP.md).
+
+---
+
+## Day 5: 2026-10-31, `baseURL` + `testConfig` fixture (Step 2, Part 2.3)
+
+Branch: `feature/baseurl-config-fixture`. The old branch `feature/page-object-fixtures` was deleted with `git branch -d` (safe, because it was already merged).
+
+### Opening quiz (Day 4 recall)
+| Question | My answer | Gap closed |
+|---|---|---|
+| Fixture vs `beforeEach` | Fixture is written once and injected; `beforeEach` repeats variables and objects in every file | Fixtures are **lazy** and keep setup + teardown together; both give a fresh object because every test gets a **new `page`** |
+| Class / object / constructor | Class = blueprint, object = real instance, constructor initialises values | `page` is passed so the object's methods know **which browser tab** to act on |
+| What `use()` does | (not answered) | Hands the value to the test and waits; code before = setup, after = teardown |
+| Why override `context`, not `page` | "context is isolated" | `context.route()` covers **every tab and popup** in the context; `page.route()` covers one tab only |
+
+### Problem (before)
+Every one of the 26 test files still had:
+```ts
+import { TestConfig } from '@config/testconfig';
+let testConfig: TestConfig;
+
+test.beforeEach(async ({ page }) => {
+    testConfig = new TestConfig();
+    await page.goto(testConfig.appUrl);
+});
+```
+- The same `let` + `new` pattern we removed for page objects on Day 4.
+- Full URLs were built by hand: `testConfig.apploginUrl`, `testConfig.testcaseUrl`, and in page objects `this.page.goto(new URL('/products', this.page.url()).toString())`.
+- `new URL(path, this.page.url())` builds the URL from **whatever page the browser is on**. If an ad had opened another domain, the fallback would navigate to the wrong site.
+
+### What changed
+| File | Change |
+|---|---|
+| `playwright.config.ts` | `use: { baseURL: requireEnv('BASE_URL') }` |
+| `config/testconfig.ts` | `requireEnv` is exported; the unused `appUrl`, `apploginUrl`, `testcaseUrl` fields are removed. `TestConfig` now holds only `emailaddress` and `password` |
+| `fixtures/baseTest.ts` | New fixture `testConfig: async ({}, use) => { await use(new TestConfig()); }` and `testConfig: TestConfig` in the `PageFixtures` type |
+| 26 test files | `page.goto('/')`; `TestConfig` import, `let` and `new TestConfig()` removed; 4 tests ask for `testConfig` in their signature |
+| 3 assertions | `toHaveURL('/')` (ContactUsForm), `toHaveURL('/test_cases')` (VerifyTestCasesPage), `toHaveURL('/login')` (LogOutUser) |
+| 4 page objects | `this.page.goto('/products')`, `'/product_details/1'`, `'/category_products/1'` and `/3`, `'/test_cases'` |
+
+Who did what: I wrote the `baseURL` line, the `testConfig` fixture, the first test migration (`LogOutUser.spec.ts`, steps 1 to 3) and the first page-object change (`homepage.ts`). Claude finished steps 4 and 5 of LogOutUser, fixed my `homepage.ts` path, ran a codemod for the other 25 tests and 4 page-object lines, and moved the `BASE_URL` check into `playwright.config.ts`.
+
+**After**
+```ts
+import { test, expect } from '@fixtures/baseTest';
+
+test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+});
+
+test("Verify the logout functionality", async ({ page, homePage, loginPage, testConfig }) => {
+    await homePage.EnterLoginEmail(testConfig.emailaddress);
+    // ...
+    await expect(page).toHaveURL('/login');
+});
+```
+
+### Concepts I learned today
+
+**`baseURL`**
+- An option in the `use` block of `playwright.config.ts`. Playwright joins it with relative paths in `page.goto()`, `page.waitForURL()`, `expect(page).toHaveURL()` and API requests.
+- `BASE_URL=https://automationexercise.com/` + `page.goto('/login')` → `https://automationexercise.com/login`.
+- The URL now lives in one place. Running against another environment = changing `BASE_URL` in `.env` or in the CI variable. No code change.
+
+**Leading slash matters**
+- `baseURL = https://site.com/app/`
+  - `goto('/login')` → `https://site.com/login` (a leading `/` starts from the domain root, so `/app` is dropped)
+  - `goto('login')` → `https://site.com/app/login`
+- Our site lives at the root, so `/login` is correct.
+
+**`baseURL` vs `this.page.url()`**
+- The old code built URLs from the page the browser is currently on. The new code always uses the configured `baseURL`.
+- They differ when the browser is on another domain (for example after an ad click): the old code would go to `google.com/products`, the new code still goes to our site.
+
+**A fixture with no dependencies: `async ({}, use)`**
+- The first argument lists the fixtures this fixture needs. `TestConfig` needs nothing, so it is `{}`.
+- Writing `{ page }` would make Playwright open a browser tab just to read credentials.
+- The fixture is lazy: only the 4 tests that ask for `testConfig` create it.
+
+**Type check does not catch logic bugs**
+- My first page-object change was `this.page.goto('/')` inside `ClickOnProductButton()`. The type check passed, because `'/'` is a valid string, but the method would have opened the home page instead of the products page.
+- TypeScript checks **types**; only tests and code review check **logic**. Run the tests after every change.
+
+**Remove dead code, keep the safety check**
+- After `baseURL`, the URL fields in `TestConfig` were not used anywhere, so they were deleted.
+- But `appUrl = requireEnv('BASE_URL')` was also the "BASE_URL is missing" check. Deleting it alone would make `baseURL` silently `undefined` and `goto('/')` fail with a confusing "invalid URL" error. So `requireEnv` is exported and used in `playwright.config.ts`.
+- Before deleting code, ask: what else did this line do?
+
+**Reading TypeScript errors**
+- `LogOutUser.spec.ts(26,36): error TS2304: Cannot find name 'testConfig'` = file, line 26, column 36. I had deleted `let testConfig` but not yet asked for `testConfig` in the test signature. The compiler found the missing step before any test ran.
+
+### Verification
+- `npm run typecheck` → no errors.
+- `LogOutUser.spec.ts` alone with `--retries=0`: passed (15.4 s). Proves `goto('/')` and `toHaveURL('/login')` resolve against `baseURL`.
+- Full suite with `--retries=0` after the test migration: **26 passed (3.9 min)**. After the page-object and config changes: **26 passed (3.8 min)**.
+- `BASE_URL` left empty → `npx playwright test --list` stops with `Missing environment variable "BASE_URL"`.
+- Search: no `appUrl`, `apploginUrl`, `testcaseUrl` or `new TestConfig()` in `tests/`, and no `new URL(` in `pages/`.
+- Size: 33 files changed, 187 lines removed, 47 added.
+
+### What I learned
+- `baseURL` + relative paths = one place for the environment URL.
+- Any object a test needs (page objects, config) can be a fixture; the same 3 steps every time: import, add to the type, write the fixture.
+- Delete leftovers too: when I removed lines, the empty lines stayed behind; a clean diff is part of a good change.
+- The path in `goto()` must match where the method wants to go; copy the path, do not guess it.
+
+### Step 2 is done ✅
+Ad-blocking `context`, 9 page-object fixtures, `testConfig` fixture, `baseURL`. Tests now contain only test steps.
+
+### Next
+- Commit, push, and merge through the first real Pull Request (`gh pr create`, `gh pr checks --watch`, `gh pr merge`).
+- Step 3: Page Object cleanup (naming conventions such as `ClickOnLoginButton` vs `clickOnSignupLoginButton`, `readonly` locators, no `async` getters for locators, no `force: true`).

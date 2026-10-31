@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import { requireEnv } from './config/testconfig';
 
 dotenv.config({ quiet: true });
 
@@ -27,6 +28,7 @@ export default defineConfig({
     viewport: { width: 1280, height: 720 }, // Set default viewport size for consistency
     ignoreHTTPSErrors: true, // Ignore SSL errors if necessary
     permissions: ['geolocation'], // Set necessary permissions for geolocation-based tests
+    baseURL: requireEnv('BASE_URL'), // page.goto('/login') opens BASE_URL + login
   },
 
   //grep: /@master/,

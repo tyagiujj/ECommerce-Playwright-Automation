@@ -1,17 +1,10 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { TestConfig } from '@config/testconfig';
-
-let testConfig: TestConfig;
-
-
 test.beforeEach(async ({ page }) => {
-    testConfig = new TestConfig();
-   
     
 
     // Launch the application
-    await page.goto(testConfig.appUrl);
+    await page.goto('/');
 });
 
 test("Verify Test Case Page", async ({ page ,homePage,testCasesPage})=>{
@@ -32,5 +25,5 @@ test("Verify Test Case Page", async ({ page ,homePage,testCasesPage})=>{
     await expect(await testCasesPage.GetTestCasesText()).toHaveText("Test Cases");
 
     // Verify that the user is navigated to the Test Cases page
-    await expect(page).toHaveURL(testConfig.testcaseUrl);
+    await expect(page).toHaveURL('/test_cases');
 });

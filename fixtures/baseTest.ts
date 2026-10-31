@@ -8,6 +8,7 @@ import { CategoryPage } from '@pages/Categorypage';
 import { ContactUsPage } from '@pages/contactUsformpage';
 import { TestCasesPage } from '@pages/testCasespage';
 import { CommonActions } from '@utils/commonActions';
+import { TestConfig } from '@config/testconfig';
 
 // Google ad servers. Their ads (full-screen vignette, injected chips) block clicks and change page text.
 const AD_HOSTS = /googlesyndication|doubleclick\.net|googleadservices|adservice\.google|fundingchoicesmessages/;
@@ -24,6 +25,7 @@ type PageFixtures = {
   contactUsPage: ContactUsPage;
   testCasesPage: TestCasesPage;
   commonActions: CommonActions;
+  testConfig: TestConfig;
 };
 
 export const test = base.extend<PageFixtures>({
@@ -58,6 +60,9 @@ export const test = base.extend<PageFixtures>({
   },
   commonActions: async ({ page }, use) => {
     await use(new CommonActions(page));
+  },
+  testConfig: async ({}, use) => {
+    await use(new TestConfig());
   },
 });
 

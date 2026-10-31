@@ -1,16 +1,11 @@
 import { test, expect } from '@fixtures/baseTest';
-import { TestConfig } from '@config/testconfig';
-
-let testConfig: TestConfig;
 
 test.beforeEach(async ({ page }) => {
-    testConfig = new TestConfig();
-
     // Launch the application
-    await page.goto(testConfig.appUrl);
+    await page.goto('/');
 });
 
-test("Verify the Registration functionality with existing email", async ({ page, homePage, registerPage }) => {
+test("Verify the Registration functionality with existing email", async ({ page, homePage, registerPage, testConfig }) => {
 
     // 1. Verify that the home page is visible successfully
     await expect(await homePage.verifyHomepageLogoIsVisible()).toBeVisible();

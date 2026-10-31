@@ -118,7 +118,7 @@ this.reviewSuccessMessage = page.getByText('Thank you for your review.', { exact
         await this.page.waitForLoadState('domcontentloaded');
 
         if (!this.page.url().includes('/product_details')) {
-            await this.page.goto(new URL('/product_details/1', this.page.url()).toString());
+            await this.page.goto('/product_details/1');
         }
     }
 

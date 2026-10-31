@@ -84,7 +84,11 @@ npm run test:debug -- tests/SearchProduct.spec.ts  # one file, line by line
 npm run test:list -- -g "Login"                    # check which tests a filter picks
 npm run typecheck                                  # before committing
 npm run report                                     # after a run
+npx playwright test tests/LogOutUser.spec.ts --retries=0   # one file, no retries (prove a change works)
+npx playwright test --list                         # loads the config: quick check that .env values are present
 ```
+
+**Check the "missing variable" message** (Git Bash): `BASE_URL= npx playwright test --list` → `Missing environment variable "BASE_URL"`. An empty value set in the shell wins over `.env`.
 
 ---
 
@@ -131,6 +135,19 @@ gh pr merge                                 # merge after review and green CI
 git switch main && git pull origin main     # come back to the updated main
 git branch -d feature/<topic>               # delete the merged local branch
 ```
+`-d` deletes only a branch that is already merged (safe). `-D` deletes it anyway (use with care).
+
+### Pull Request flow in detail
+```
+git push -u origin feature/<topic>          # 1. send the branch to GitHub
+gh pr create --base main --fill             # 2. open a PR; --fill uses the commit message as title/body
+gh pr view --web                            # 3. open the PR in the browser (review the "Files changed" tab)
+gh pr checks --watch                        # 4. follow CI live until every check finishes
+gh pr merge --merge --delete-branch         # 5. merge into main and delete the remote branch
+git switch main && git pull origin main     # 6. update local main
+git branch -d feature/<topic>               # 7. delete the local branch
+```
+Merge options: `--merge` (keeps every commit + a merge commit), `--squash` (all commits become one), `--rebase` (commits replayed on top of main, no merge commit).
 
 ---
 

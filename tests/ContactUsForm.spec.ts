@@ -1,14 +1,9 @@
 import { test, expect } from '@fixtures/baseTest';
 
-import { TestConfig } from '@config/testconfig';
 import { RandomDataUtil } from '@config/rondomDataGenerator';
 
-let testConfig: TestConfig;
-
 test.beforeEach(async ({ page }) => {
-    testConfig = new TestConfig();
-
-    await page.goto(testConfig.appUrl);
+    await page.goto('/');
 });
 
 test("Verify the functionality of contact Us Form", async ({ page, homePage, contactUsPage }) => {
@@ -61,6 +56,6 @@ test("Verify the functionality of contact Us Form", async ({ page, homePage, con
     await contactUsPage.ClickOnHomePageButton();
 
     //verify that landed to home page successfully
-    await expect(page).toHaveURL(testConfig.appUrl);
+    await expect(page).toHaveURL('/');
 
 });

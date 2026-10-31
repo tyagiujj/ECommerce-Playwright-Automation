@@ -40,7 +40,7 @@ export class CategoryPage{
         if (await this.dressCategory.isVisible()) {
             await this.dressCategory.click();
         } else {
-            await this.page.goto(new URL('/category_products/1', this.page.url()).toString());
+            await this.page.goto('/category_products/1');
         }
 
         await this.CloseAdIfVisible();
@@ -60,7 +60,7 @@ export class CategoryPage{
         if (await this.tshirtsCategory.isVisible()) {
             await this.tshirtsCategory.click();
         } else {
-            await this.page.goto(new URL('/category_products/3', this.page.url()).toString());
+            await this.page.goto('/category_products/3');
         }
 
         await this.CloseAdIfVisible();

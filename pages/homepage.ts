@@ -100,7 +100,7 @@ export class HomePage {
         await this.page.waitForLoadState('domcontentloaded');
 
         if (!this.page.url().includes('/products')) {
-            await this.page.goto(new URL('/products', this.page.url()).toString());
+            await this.page.goto('/products');
         }
     }
 

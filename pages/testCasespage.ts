@@ -18,7 +18,7 @@ export class TestCasesPage{
         await this.page.waitForLoadState('domcontentloaded');
 
         if (!this.page.url().includes('/test_cases')) {
-            await this.page.goto(new URL('/test_cases', this.page.url()).toString());
+            await this.page.goto('/test_cases');
         }
     }
     async GetTestCasesText(){

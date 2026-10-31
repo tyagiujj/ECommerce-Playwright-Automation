@@ -4,7 +4,7 @@ Every concept used in this framework, explained in detail: **what it is**, **why
 
 This file grows every day together with [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md) (the daily log). The journey says *what happened when*; this file says *what each concept means and how to explain it*.
 
-> **Last updated:** 2026-10-29 (Day 4)
+> **Last updated:** 2026-10-31 (Day 5)
 
 ---
 
@@ -28,7 +28,8 @@ This file grows every day together with [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY
 16. [Retries, traces, screenshots, videos](#16-retries-traces-screenshots-videos)
 17. [Git: feature branch workflow and Pull Requests](#17-git-feature-branch-workflow-and-pull-requests)
 18. [Refactoring principles](#18-refactoring-principles)
-19. [Quick revision table](#19-quick-revision-table)
+19. [`baseURL` and relative URLs](#19-baseurl-and-relative-urls)
+20. [Quick revision table](#20-quick-revision-table)
 
 ---
 
@@ -40,8 +41,8 @@ This file grows every day together with [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY
 > It is a UI automation framework for an e-commerce site, built with **Playwright Test** and **TypeScript** in strict mode, using the **Page Object Model**.
 >
 > - **`pages/`** holds one class per page. Each class owns its locators and actions, so tests read like business steps and a locator change is fixed in one place.
-> - **`fixtures/baseTest.ts`** extends Playwright's `test` with custom fixtures. It overrides the browser `context` to block third-party ad requests that made CI flaky, and it creates every page object, so tests just ask for `homePage` or `cartPage` in their signature. No test creates objects itself.
-> - **`config/`** reads the base URL and credentials from environment variables: a `.env` file locally, GitHub Secrets and Variables in CI. A missing variable stops the run at once with a clear message.
+> - **`fixtures/baseTest.ts`** extends Playwright's `test` with custom fixtures. It overrides the browser `context` to block third-party ad requests that made CI flaky, and it creates every page object and the config object, so tests just ask for `homePage`, `cartPage` or `testConfig` in their signature. No test creates objects itself.
+> - **Configuration** comes from environment variables: a `.env` file locally, GitHub Secrets and Variables in CI. `BASE_URL` is Playwright's `baseURL`, so tests only use relative paths like `page.goto('/')`; credentials reach tests through a `testConfig` fixture. A missing variable stops the run at once with a clear message.
 > - **`tests/`** has 26 end-to-end scenarios: registration, login, cart, checkout, invoice download and more. Test data such as sign-up emails is generated with Faker plus a timestamp, so it is unique on a shared environment.
 > - **npm scripts** are the single entry point for every task (`npm test`, `npm run typecheck`...), used the same way locally and in CI.
 > - **GitHub Actions** runs a type check first, then the tests, and uploads the HTML report. We use HTML and Allure reports, with screenshots and video on failure and a trace on retry.
@@ -193,25 +194,24 @@ A: `test`, `start` and a few others are built-in lifecycle scripts with shortcut
 ### What it is
 - `config/testconfig.ts` reads values from `process.env`:
   ```ts
-  function requireEnv(name: string): string {
+  export function requireEnv(name: string): string {
     const value = process.env[name];
     if (!value) throw new Error(`Missing environment variable "${name}". ...`);
     return value;
   }
   export class TestConfig {
-    appUrl = requireEnv('BASE_URL');
-    apploginUrl = new URL('login', this.appUrl).toString();
     emailaddress = requireEnv('USER_EMAIL');
     password = requireEnv('USER_PASSWORD');
   }
   ```
+- `BASE_URL` is read in `playwright.config.ts` as `baseURL: requireEnv('BASE_URL')` (see section 19). Since Day 5, `TestConfig` holds only credentials and reaches tests as the `testConfig` fixture.
 - Locally the values come from a git-ignored `.env` file, loaded by `dotenv.config()` in `playwright.config.ts`. `.env.example` is the committed template.
 - In CI they come from GitHub Secrets / Variables.
 
 ### Concepts
 - **12-Factor App, "Config":** config that changes between environments (URLs, credentials) lives in the environment, not in code. Code knows the *name* (`BASE_URL`); the environment provides the *value*.
 - **Fail fast:** `requireEnv()` stops at once with a clear message instead of failing later with a confusing `undefined` error inside a test.
-- **Single source of truth:** the login URL is built from `BASE_URL`, not stored separately.
+- **Single source of truth:** every URL comes from `BASE_URL` through Playwright's `baseURL`; nothing else stores a URL.
 
 ### Why
 - Before, the URL and password were hard-coded and committed. Changing environment (QA → staging) meant editing code.
@@ -220,7 +220,7 @@ A: `test`, `start` and a few others are built-in lifecycle scripts with shortcut
 ### Interview questions
 
 **Q: How do you run the same tests against different environments?**
-A: All environment-specific values come from environment variables. Locally from `.env`, in CI from the pipeline's secrets and variables. Derived values like the login URL are built from `BASE_URL`, so one value switches the whole environment.
+A: All environment-specific values come from environment variables. Locally from `.env`, in CI from the pipeline's secrets and variables. `BASE_URL` becomes Playwright's `baseURL` and tests use relative paths, so one value switches the whole environment.
 
 **Q: What happens if a variable is missing?**
 A: `requireEnv()` throws immediately with the variable's name and a hint to check `.env.example`. Failing fast with a clear message saves debugging time.
@@ -314,6 +314,11 @@ export const test = base.extend<PageFixtures>({
     await use(new HomePage(page));
   },
   // ...
+
+  // 3. A fixture with no dependencies: config (credentials)
+  testConfig: async ({}, use) => {
+    await use(new TestConfig());
+  },
 });
 
 export { expect } from '@playwright/test';
@@ -372,6 +377,12 @@ A: `test` (default): created for every test. `worker`: created once per worker p
 
 **Q: How did you add a behaviour to every test without editing them?**
 A: By overriding the built-in `context` fixture in `baseTest.ts` to route ad hosts to `abort()`. All tests import `test` from that file, so they all got it.
+
+**Q: Why is the first argument `{}` in `testConfig: async ({}, use) => ...`?**
+A: The first argument lists the fixtures this fixture depends on. `TestConfig` needs no browser, so it asks for nothing. With `{ page }`, Playwright would open a tab only to read credentials. Fixtures are built only when needed, and this one is needed by just 4 tests.
+
+**Q: Can a fixture hold something that is not a page object?**
+A: Yes: config, test data, an API client, a logged-in user, a database connection. Anything a test needs and that should be created in one place.
 
 **Q: Why the `<PageFixtures>` generic?**
 A: It tells TypeScript which fixtures exist and their types. Tests get autocomplete, a typo in a fixture name is a compile error, and TypeScript also errors if a fixture in the type is not implemented.
@@ -606,7 +617,9 @@ A: Merge keeps history as it happened and adds a merge commit. Rebase replays yo
 | **Fail fast** | Report problems as early and clearly as possible | `requireEnv()`, type check before tests in CI |
 | **Small steps** | Change, verify, then scale | Migrated one test, ran it, then the other 25 |
 | **Backward-compatible change** | New code does not break old code | New fixtures did not break tests that had not migrated yet |
-| **Codemod** | A script that applies the same change to many files | Migrated 24 test files with one script |
+| **Codemod** | A script that applies the same change to many files | Migrated 24 test files (Day 4) and 25 test files (Day 5) with one script |
+| **Remove dead code, keep its side effects** | Before deleting a line, check what else it did | Deleted `TestConfig.appUrl` but moved its `requireEnv('BASE_URL')` check to `playwright.config.ts` |
+| **Types are not logic** | A passing type check does not prove the code is right | `goto('/')` instead of `goto('/products')` compiled fine; tests catch that |
 | **Fix at the source** | Remove the cause, not the symptom | Blocked ads instead of closing them; fixed waits instead of raising timeouts |
 
 **Q: How do you refactor a large test suite safely?**
@@ -614,7 +627,57 @@ A: In small steps with a check after each one. Make the new mechanism backward-c
 
 ---
 
-## 19. Quick revision table
+## 19. `baseURL` and relative URLs
+
+### What it is
+```ts
+// playwright.config.ts
+import { requireEnv } from './config/testconfig';
+
+use: {
+  baseURL: requireEnv('BASE_URL'), // page.goto('/login') opens BASE_URL + login
+}
+```
+```ts
+// in a test
+await page.goto('/');                       // https://automationexercise.com/
+await expect(page).toHaveURL('/login');     // compared with https://automationexercise.com/login
+
+// in a page object
+await this.page.goto('/products');
+```
+Playwright joins `baseURL` with relative paths in `page.goto()`, `page.waitForURL()`, `expect(page).toHaveURL()` and API calls (`request.get('/api/...')`).
+
+### Why we did it (Day 5)
+- Before: every test called `page.goto(testConfig.appUrl)`, assertions used full URLs (`testConfig.apploginUrl`), and page objects built URLs with `new URL('/products', this.page.url()).toString()`.
+- After: the URL is configured once. Tests and page objects only say **where on the site** to go.
+- Changing environment (QA → staging) = changing one variable, `BASE_URL`.
+
+### Concepts
+- **Leading slash:** with `baseURL = https://site.com/app/`, `goto('/login')` → `https://site.com/login` (root), `goto('login')` → `https://site.com/app/login` (relative to the folder). Standard URL resolution, the same as links in HTML.
+- **`baseURL` vs current page URL:** `new URL(path, page.url())` depends on where the browser is right now (it could be an ad's domain). `baseURL` is always the configured site.
+- **Fail fast in the config:** `baseURL: requireEnv('BASE_URL')` stops the run with a clear message when the variable is missing, instead of an "invalid URL" error inside a test.
+
+### Interview questions
+
+**Q: How do you run the same suite against QA, staging and production?**
+A: The base URL comes from an environment variable and is set as `baseURL` in `playwright.config.ts`. Tests and page objects use only relative paths like `page.goto('/login')`. Locally the value comes from `.env`, in CI from a pipeline variable, so switching environments is one value and no code change. For several fixed environments you can also define one Playwright **project** per environment, each with its own `baseURL`.
+
+**Q: What does `page.goto('/')` do if `baseURL` is not set?**
+A: It fails, because `'/'` is not a full URL. That is why our config reads `BASE_URL` through `requireEnv()`: a missing value stops the run at once with the variable's name.
+
+**Q: Does `toHaveURL` use `baseURL` too?**
+A: Yes. `expect(page).toHaveURL('/login')` resolves the string against `baseURL` before comparing. For dynamic parts use a regex, for example `toHaveURL(/\/brand_products\/Polo/)`.
+
+**Q: `goto('/login')` vs `goto('login')`?**
+A: With a leading slash the path starts at the domain root; without it, it is relative to the `baseURL` path. They only differ when `baseURL` has a path such as `/app/`.
+
+**Q: Why not keep full URLs in a config class?**
+A: Duplication: every URL had to be built and stored, and tests had to read them. With `baseURL` Playwright does the joining, the code is shorter, and there is no URL to forget to update.
+
+---
+
+## 20. Quick revision table
 
 | Concept | One-line answer |
 |---------|-----------------|
@@ -649,3 +712,8 @@ A: In small steps with a check after each one. Make the new mechanism backward-c
 | Feature branch | Work isolated from `main`, merged via PR |
 | Pull Request | Code review + CI before merge |
 | Codemod | Script that applies one change to many files |
+| `baseURL` | Configured site URL; `goto('/x')` = `baseURL` + `x` |
+| Leading `/` | Path from the domain root; without it, relative to the `baseURL` path |
+| Relative `toHaveURL` | `toHaveURL('/login')` is resolved against `baseURL` |
+| `async ({}, use)` | Fixture with no dependencies |
+| `TS2304: Cannot find name` | A variable is used but never declared or received |

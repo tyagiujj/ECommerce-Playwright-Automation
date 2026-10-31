@@ -6,7 +6,7 @@ A UI automation framework built with **Playwright**, **TypeScript** and the **Pa
 
 The framework is being hardened step by step towards industry standards: environment-based configuration, custom fixtures, CI with GitHub Secrets, and stable, non-flaky tests. Every change is logged with its reason in [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOURNEY.md), and every concept is explained with interview questions in [INTERVIEW_PREP.md](INTERVIEW_PREP.md).
 
-> **Last updated:** 2026-10-29 · **CI status (main):** ✅ green (25 passed, 1 flaky, 0 failed) · **Local, branch `feature/page-object-fixtures`:** 26 passed, 0 retries
+> **Last updated:** 2026-10-31 · **CI status (main):** ✅ green (26 passed, 0 flaky, 0 failed, 2.1 min) · **Local, branch `feature/baseurl-config-fixture`:** 26 passed, 0 retries
 
 ---
 
@@ -40,7 +40,7 @@ A public e-commerce application widely used to practise manual and automation te
 | Playwright Test | Test runner and browser automation |
 | TypeScript (strict mode) | Programming language and type checking |
 | Page Object Model | Design pattern |
-| Custom fixtures | Shared test setup: ad blocking and page objects injected into tests |
+| Custom fixtures | Shared test setup: ad blocking, page objects and config injected into tests |
 | dotenv | Environment variables from `.env` |
 | Faker | Dynamic test data |
 | GitHub Actions | CI/CD |
@@ -58,11 +58,11 @@ AutomationExerciseProject
 │   └── playwright.yml          # CI: type check, tests, report upload
 │
 ├── config/
-│   ├── testconfig.ts           # Reads BASE_URL, USER_EMAIL, USER_PASSWORD from the environment
+│   ├── testconfig.ts           # requireEnv() + TestConfig (USER_EMAIL, USER_PASSWORD from the environment)
 │   └── rondomDataGenerator.ts  # Faker-based test data (unique emails)
 │
 ├── fixtures/
-│   └── baseTest.ts             # Custom test: blocks Google ads, creates every page object
+│   └── baseTest.ts             # Custom test: blocks Google ads, creates every page object and testConfig
 │
 ├── pages/                      # Page objects
 │   ├── homepage.ts
@@ -149,21 +149,26 @@ Each page class holds its locators and actions, so tests read like business step
 All tests import `test` and `expect` from `@fixtures/baseTest` instead of `@playwright/test`. The file does two things:
 
 - **Ad blocking:** it overrides the browser `context` and aborts requests to Google ad servers. The site's full-screen ads and injected ad links used to block clicks and change page text, which made CI fail at random.
-- **Page objects as fixtures:** it creates every page object (`homePage`, `loginPage`, `cartPage`, ...), typed with a `PageFixtures` type. A test asks for what it needs in its signature, and Playwright creates a fresh object for that test:
+- **Page objects and config as fixtures:** it creates every page object (`homePage`, `loginPage`, `cartPage`, ...) and the `testConfig` object (credentials), typed with a `PageFixtures` type. A test asks for what it needs in its signature, and Playwright creates a fresh object for that test:
 
 ```ts
 import { test, expect } from '@fixtures/baseTest';
 
-test('Login user', async ({ page, homePage, loginPage }) => {
-    await homePage.clickOnSignupLoginButton();
+test.beforeEach(async ({ page }) => {
+    await page.goto('/');                    // baseURL + '/'
+});
+
+test('Logout user', async ({ page, homePage, loginPage, testConfig }) => {
+    await homePage.EnterLoginEmail(testConfig.emailaddress);
     // ...
+    await expect(page).toHaveURL('/login');
 });
 ```
 
-No test declares `let` variables or creates page objects in `beforeEach`; `new HomePage(page)` exists in one place only.
+No test declares `let` variables or creates objects in `beforeEach`; `new HomePage(page)` and `new TestConfig()` exist in one place only.
 
 ### Environment-based configuration
-`config/testconfig.ts` reads values from `process.env` through `requireEnv()`. Locally they come from `.env` (loaded by `dotenv` in `playwright.config.ts`); in CI they come from GitHub Secrets and Variables. Login and test-case URLs are built from `BASE_URL`, so switching environments means changing one value.
+Values come from `process.env` through `requireEnv()` (in `config/testconfig.ts`). Locally they come from `.env` (loaded by `dotenv` in `playwright.config.ts`); in CI they come from GitHub Secrets and Variables. `BASE_URL` is set as Playwright's `baseURL`, so tests and page objects use only relative paths (`page.goto('/')`, `toHaveURL('/login')`). Switching environments means changing one value.
 
 ### Stability practices
 - Wait for real conditions (`waitForURL`, web-first assertions) instead of fixed sleeps.
@@ -239,7 +244,7 @@ To run CI in your own fork, add under **Settings → Secrets and variables → A
 | # | Step | Status |
 |---|------|--------|
 | 1 | Foundation: `tsconfig.json`, path aliases, npm scripts, `.env`, CI with GitHub Secrets | ✅ Done |
-| 2 | Custom fixtures: ad blocking ✅, page objects injected into tests ✅, config / `baseURL` next | 🔄 In progress |
+| 2 | Custom fixtures: ad blocking, page objects and config injected into tests, `baseURL` | ✅ Done |
 | 3 | Page Object cleanup: naming conventions, `readonly` locators, no `force: true` | ⬜ |
 | 4 | Reusable business flows (register user) and API-based setup | ⬜ |
 | 5 | Remove hard waits (`waitForTimeout`) and use web-first assertions | ⬜ |
@@ -256,6 +261,13 @@ Details, reasons and lessons for each step: [FRAMEWORK_JOURNEY.md](FRAMEWORK_JOU
 ---
 
 # 📝 Recent Updates
+
+### 2026-10-31 (Day 5)
+- `baseURL` in `playwright.config.ts` (read with `requireEnv('BASE_URL')`): tests open the site with `page.goto('/')` and assert with relative URLs such as `toHaveURL('/login')`.
+- New `testConfig` fixture: credentials are injected like page objects. The `TestConfig` import, `let` variable and `new TestConfig()` are gone from all 26 tests.
+- Page objects navigate with relative paths (`this.page.goto('/products')`) instead of building URLs from the current page.
+- Removed the unused URL fields from `TestConfig`. 33 files changed, 140 fewer lines; 26 of 26 tests pass with no retries. **Step 2 (custom fixtures) is done.**
+- Day 4 CI result recorded: 26 passed, 0 flaky, 2.1 min.
 
 ### 2026-10-29 (Day 4)
 - Work now happens on feature branches and reaches `main` through Pull Requests (first branch: `feature/page-object-fixtures`).
